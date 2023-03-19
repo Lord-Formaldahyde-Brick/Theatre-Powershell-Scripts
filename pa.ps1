@@ -31,7 +31,7 @@
  
     
 
- function Process-Audio {
+ function Format-Audio {
    
     # User Args
     
