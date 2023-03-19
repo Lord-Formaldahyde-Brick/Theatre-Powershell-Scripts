@@ -1,5 +1,7 @@
 
 
+ 
+
  <#
  .SYNOPSIS
     Process Audio - Colin Evans 2023 - Routine for converting disparate audio/video formats to wav 
@@ -20,7 +22,7 @@
     both for current user and system, if other user accounts need access
     The function should be copied and used from the Powershell User Profile file which is created by typing...
     New-Item -Path $profile -ItemType File -Force
-    This is created as %UserProfile%\Documents\WindowsÂ­PowerShell\profile.ps1
+    This is created as %UserProfile%\Documents\Windows\­PowerShell\profile.ps1
     This script is my first in Powershell, it has taken a couple of days to get this script done. Bash and C are more familiar
     and you can see that in the code, although it works quite robustly and I think it's quite readable. However, much to learn me thinks!
  .LINK
@@ -42,8 +44,11 @@
             [Parameter(Mandatory = $false)]
             [float]$SetTargetGain,
                 
-            [Parameter(Mandatory =$false)]
-            [bool]$Album
+            [Parameter(Mandatory = $false)]
+            [bool]$Album,
+
+            [Parameter(Mandatory = $false)]
+            [string]$SampleRate
     )
     
         # functions
@@ -56,7 +61,8 @@
             }
         }
         
-        function TrackByTrack ($LU0) {
+        function TrackByTrack  {
+            param ($LU0, $SR)
             Write-Host "`nMeasuring Track Level`n"
             foreach($file in Get-ChildItem -Name -Exclude output){       
                 $captureR128Gain = r128gain --progress=off  --reference=$LU0 $file
@@ -64,7 +70,7 @@
                 Write-Host "`n"$file"`n"
                 if ($gain -ne 0) {
                     Write-Host "Not equal to 0 LU - Adjusting Gain`n"
-                    sox "$file" output/"$file" rate 44100 gain $gain
+                    sox "$file" output/"$file" rate "$SR" gain $gain
                 }
                 else {
                     Write-Host "Gain is already 0 LU`n"
@@ -73,13 +79,14 @@
             }  
         }    
     
-        function AlbumByAlbum ($LU0) {
+        function AlbumByAlbum  {
+            param ($LU0, $SR)
             Write-Host "`nMeasuring Levels`n"
             $captureR128Gain = r128gain --progress=off  --reference=$LU0 *.wav
             [float]$gain =  [string]($captureR128Gain | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
             Write-Host "`nSetting Gain"
             foreach ( $file in Get-ChildItem -Name -Exclude output ) {
-                sox "$file" output/"$file" rate 44100 gain $gain
+                sox "$file" output/"$file" rate "$SR" gain $gain
             }
         }
     
@@ -117,14 +124,20 @@
         New-Item -Path ".\" -Name "output" -ItemType "directory"  
      
         # function calls for gain and sample rate
+        if ($SampleRate -ieq "48k"){
+            $SR = "48k"
+        }
+        Else {
+            $SR = "44.1k"
+        }
     
         if ($Album) {
             Write-Host "`nAlbum Mode`n"
-            AlbumByAlbum($SetTargetGain)
+            AlbumByAlbum($SetTargetGain, $SR)
         }
         else {
             Write-Host "`nTrack Mode`n"
-            TrackByTrack($SetTargetGain)
+            TrackByTrack($SetTargetGain, $SR)
         }
      
         # tidy up
