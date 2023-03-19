@@ -21,6 +21,8 @@
     The function should be copied and used from the Powershell User Profile file which is created by typing...
     New-Item -Path $profile -ItemType File -Force
     This is created as %UserProfile%\Documents\WindowsÂ­PowerShell\profile.ps1
+    This script is my first in Powershell, it has taken a couple of days to get this script done. Bash and C are more familiar
+    and you can see that in the code, although it works quite robustly and I think it's quite readable. However, much to learn me thinks!
  .LINK
     
  .EXAMPLE
