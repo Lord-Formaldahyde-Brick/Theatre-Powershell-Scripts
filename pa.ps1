@@ -57,8 +57,8 @@
         function TrackByTrack ($LU0) {
             Write-Host "`nMeasuring Track Level`n"
             foreach($file in Get-ChildItem -Name -Exclude output){       
-                $captureR128 = r128gain --progress=off  --reference=$LU0 $file
-                [float]$gain =  [string]($captureR128 | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
+                $captureR128Gain = r128gain --progress=off  --reference=$LU0 $file
+                [float]$gain =  [string]($captureR128Gain | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
                 Write-Host "`n"$file"`n"
                 if ($gain -ne 0) {
                     Write-Host "Not equal to 0 LU - Adjusting Gain`n"
