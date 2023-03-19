@@ -73,8 +73,8 @@
     
         function AlbumByAlbum ($LU0) {
             Write-Host "`nMeasuring Levels`n"
-            $captureR128 = r128gain --progress=off  --reference=$LU0 *.wav
-            [float]$gain =  [string]($captureR128 | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
+            $captureR128Gain = r128gain --progress=off  --reference=$LU0 *.wav
+            [float]$gain =  [string]($captureR128Gain | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
             Write-Host "`nSetting Gain"
             foreach ( $file in Get-ChildItem -Name -Exclude output ) {
                 sox "$file" output/"$file" rate 44100 gain $gain
