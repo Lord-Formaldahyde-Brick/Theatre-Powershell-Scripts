@@ -2,7 +2,7 @@
 
  <#
  .SYNOPSIS
-    Process Audio v1.0 Colin Evans 2023 - Routine for converting disparate audio/video formats to wav 
+    Process Audio - Colin Evans 2023 - Routine for converting disparate audio/video formats to wav 
     and then applying EBU-R128 loudness normalisation either using the default 'track by track', 
     or the optional 'album by album'
  .DESCRIPTION
@@ -25,7 +25,7 @@
     
  .EXAMPLE
     Process-Audio [-SetTargetGain <float>] [-Album <bool>]  [<CommonParameters>]
-    Usage example with alternative value: Set-Level -SetTargetGain -24.5 -Album 1
+    Usage example with alternative LU0 value: Set-Level -SetTargetGain -24.5 -Album 1
 
  #>
  
@@ -39,7 +39,7 @@
         param (
             [Parameter(Mandatory = $false)]
             [float]$SetTargetGain,
-    
+                
             [Parameter(Mandatory =$false)]
             [bool]$Album
     )
