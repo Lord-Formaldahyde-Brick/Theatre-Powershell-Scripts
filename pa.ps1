@@ -1,7 +1,3 @@
-
-
- 
-
  <#
  .SYNOPSIS
     Process Audio - Colin Evans 2023 - Routine for converting disparate audio/video formats to wav 
@@ -73,7 +69,7 @@
                 Write-Host "`n"$file"`n"
                 if ($gain -ne 0) {
                     Write-Host "Not equal to 0 LU - Adjusting Gain`n"
-                    sox "$file" output/"$file" rate "$SR" gain $gain
+                    sox -S -V3 "$file" output/"$file" rate "$SR" gain $gain
                 }
                 else {
                     Write-Host "Gain is already 0 LU`n"
@@ -92,7 +88,7 @@
             [float]$gain =  [string]($captureR128Gain | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
             Write-Host "`nSetting Gain"
             foreach ( $file in Get-ChildItem -Name -Exclude output ) {
-                sox "$file" output/"$file" rate "$SR" gain $gain
+                sox -S -V3 "$file" output/"$file" rate "$SR" gain $gain
             }
         }
     
@@ -130,12 +126,14 @@
         New-Item -Path ".\" -Name "output" -ItemType "directory"  
      
         # function calls for gain and sample rate
-        if ($SampleRate -ieq "48k"){
-            $SR = "48k"
-        }
-        Else {
-            $SR = "44.1k"
-        }
+        
+            if ($SampleRate -ieq "48k" -or $SampleRate -eq "48000"){
+                $SR = "48k"
+            }
+        
+            if ($SampleRate -eq "44.1k" -or $SampleRate -eq "44100"){
+                $SR = "44.1k"
+            }        
     
         if ($Album) {
             Write-Host "`nAlbum Mode`n"
