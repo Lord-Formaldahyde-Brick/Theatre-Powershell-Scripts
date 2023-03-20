@@ -62,7 +62,10 @@
         }
         
         function TrackByTrack  {
-            param ($LU0, $SR)
+            param (
+                [Parameter()][float]$LU0, 
+                [Parameter()][string]$SR
+                )
             Write-Host "`nMeasuring Track Level`n"
             foreach($file in Get-ChildItem -Name -Exclude output){       
                 $captureR128Gain = r128gain --progress=off  --reference=$LU0 $file
@@ -80,7 +83,10 @@
         }    
     
         function AlbumByAlbum  {
-            param ($LU0, $SR)
+            param (
+                [Parameter()][float]$LU0, 
+                [Parameter()][string]$SR
+            )
             Write-Host "`nMeasuring Levels`n"
             $captureR128Gain = r128gain --progress=off  --reference=$LU0 *.wav
             [float]$gain =  [string]($captureR128Gain | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
@@ -133,11 +139,11 @@
     
         if ($Album) {
             Write-Host "`nAlbum Mode`n"
-            AlbumByAlbum($SetTargetGain, $SR)
+            AlbumByAlbum -LU0 $SetTargetGain -SR $SampleRate
         }
         else {
             Write-Host "`nTrack Mode`n"
-            TrackByTrack($SetTargetGain, $SR)
+            TrackByTrack -LU0 $SetTargetGain -SR $SampleRate
         }
      
         # tidy up
