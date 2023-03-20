@@ -127,36 +127,13 @@
      
         # function calls for gain and sample rate
         
-        Switch ( $SampleRate )
-        {
-            "96k" 
-            {
-                $SR = "96k"
-            }
-            "88.2k" 
-            {
-                $SR = "88.2k"
-            }
-            "48k" 
-            {
+        if ( $SampleRate ) {
+            if ( $SampleRate -ieq "48k" -or "48000") {
                 $SR = "48k"
             }
-            "44.1k" 
-            {
-                $SR = "44.1k"
-            }
-            "32k" 
-            {
-                $SR = "32k"
-            }
-            "16k" 
-            {
-                $SR = "16k"
-            }
-            default 
-            {
-                $SR = "44.1k"
-            }
+        }
+        Else {
+            $SR ="44.1k"
         }
     
         if ($Album) {
