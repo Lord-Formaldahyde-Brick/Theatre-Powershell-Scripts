@@ -127,21 +127,45 @@
      
         # function calls for gain and sample rate
         
-            if ($SampleRate -ieq "48k" -or $SampleRate -eq "48000"){
+        Switch ( $SampleRate )
+        {
+            "96k" 
+            {
+                $SR = "96k"
+            }
+            "88.2k" 
+            {
+                $SR = "88.2k"
+            }
+            "48k" 
+            {
                 $SR = "48k"
             }
-        
-            if ($SampleRate -ieq "44.1k" -or $SampleRate -eq "44100"){
+            "44.1k" 
+            {
                 $SR = "44.1k"
-            }        
+            }
+            "32k" 
+            {
+                $SR = "32k"
+            }
+            "16k" 
+            {
+                $SR = "16k"
+            }
+            default 
+            {
+                $SR = "44.1k"
+            }
+        }
     
         if ($Album) {
             Write-Host "`nAlbum Mode`n"
-            AlbumByAlbum -LU0 $SetTargetGain -SR $SampleRate
+            AlbumByAlbum -LU0 $SetTargetGain -SR $SR
         }
         else {
             Write-Host "`nTrack Mode`n"
-            TrackByTrack -LU0 $SetTargetGain -SR $SampleRate
+            TrackByTrack -LU0 $SetTargetGain -SR $SR
         }
      
         # tidy up
