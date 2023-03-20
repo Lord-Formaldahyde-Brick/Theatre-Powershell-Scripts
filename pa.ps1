@@ -125,17 +125,22 @@
         Set-Location processed-output
         New-Item -Path ".\" -Name "output" -ItemType "directory"  
      
-        # function calls for gain and sample rate
+        # Either clean up user input to be 48k for SoX or force non-parameter/other entry to 44.1k
         
         if ( $SampleRate ) {
-            if ( $SampleRate -ieq "48k" -or "48000") {
+            if ( $SR -ieq "48k" -or "48000" -or "48,000") {
                 $SR = "48k"
+            }
+            else {
+                $SR = "44.1k" # to catch spurious string entries
             }
         }
         Else {
-            $SR ="44.1k"
+            $SR ="44.1k"  # for no parameter
         }
-    
+
+        # Test for Album and choose which functions to call
+
         if ($Album) {
             Write-Host "`nAlbum Mode`n"
             AlbumByAlbum -LU0 $SetTargetGain -SR $SR
