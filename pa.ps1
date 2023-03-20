@@ -24,8 +24,8 @@
  .LINK
     
  .EXAMPLE
-    Process-Audio [-SetTargetGain <float>] [-Album <bool>] [-SampleRate <string>] [<CommonParameters>]
-    Usage example with alternative LU0 value: Set-Level -SetTargetGain -24.5 -Album 1
+    Format-Audio [-SetTargetGain <float>] [-Album <bool>] [-SampleRate <string>] [<CommonParameters>]
+    Usage example with alternative LU0 value: Format-Audio -SetTargetGain -24.5 -Album 1 -SampleRate 48k
 
  #>
  
