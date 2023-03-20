@@ -24,7 +24,7 @@
  .LINK
     
  .EXAMPLE
-    Process-Audio [-SetTargetGain <float>] [-Album <bool>]  [<CommonParameters>]
+    Process-Audio [-SetTargetGain <float>] [-Album <bool>] [-SampleRate <string>] [<CommonParameters>]
     Usage example with alternative LU0 value: Set-Level -SetTargetGain -24.5 -Album 1
 
  #>
@@ -131,7 +131,7 @@
                 $SR = "48k"
             }
         
-            if ($SampleRate -eq "44.1k" -or $SampleRate -eq "44100"){
+            if ($SampleRate -ieq "44.1k" -or $SampleRate -eq "44100"){
                 $SR = "44.1k"
             }        
     
