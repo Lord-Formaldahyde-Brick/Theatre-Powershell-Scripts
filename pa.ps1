@@ -1,4 +1,4 @@
- <#
+<#
  .SYNOPSIS
     Process Audio - Colin Evans 2023 - Routine for converting disparate audio/video formats to wav 
     and then applying EBU-R128 loudness normalisation either using the default 'track by track', 
@@ -18,7 +18,7 @@
     both for current user and system, if other user accounts need access
     The function should be copied and used from the Powershell User Profile file which is created by typing...
     New-Item -Path $profile -ItemType File -Force
-    This is created as %UserProfile%\Documents\Windows\­PowerShell\profile.ps1
+    This is created as %UserProfile%\Documents\Windows\Â­PowerShell\profile.ps1
     This script is my first in Powershell, it has taken a couple of days to get this script done. Bash and C are more familiar
     and you can see that in the code, although it works quite robustly and I think it's quite readable. However, much to learn me thinks!
  .LINK
@@ -73,7 +73,7 @@
                 }
                 else {
                     Write-Host "Gain is already 0 LU`n"
-                    Move-Item "$file" output/"$file"
+                    sox -S -V3 "$file" output/"$file" rate "$SR"
                 }        
             }  
         }    
@@ -127,16 +127,36 @@
      
         # Either clean up user input to be 48k for SoX or force non-parameter/other entry to 44.1k
         
-        if ( $SampleRate ) {
-            if ( $SampleRate -ieq "48k" -or "48000" -or "48,000") {
+        Switch ( $SampleRate )
+        {
+            "96k" 
+            {
+                $SR = "96k"
+            }
+            "88.2k" 
+            {
+                $SR = "88.2k"
+            }
+            "48k" 
+            {
                 $SR = "48k"
             }
-            else {
-                $SR = "44.1k" # to catch spurious string entries
+            "44.1k" 
+            {
+                $SR = "44.1k"
             }
-        }
-        Else {
-            $SR ="44.1k"  # for no parameter
+            "32k" 
+            {
+                $SR = "32k"
+            }
+            "16k" 
+            {
+                $SR = "16k"
+            }
+            default 
+            {
+                $SR = "44.1k"
+            }
         }
 
         # Test for Album and choose which functions to call
@@ -159,3 +179,5 @@
         Write-Host "`nAll Done`nHave a nice day" 
     
     }
+
+    New-Alias -Name "pa" Format-Audio
