@@ -128,7 +128,7 @@
         # Either clean up user input to be 48k for SoX or force non-parameter/other entry to 44.1k
         
         if ( $SampleRate ) {
-            if ( $SR -ieq "48k" -or "48000" -or "48,000") {
+            if ( $SampleRate -ieq "48k" -or "48000" -or "48,000") {
                 $SR = "48k"
             }
             else {
