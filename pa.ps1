@@ -179,5 +179,3 @@
         Write-Host "`nAll Done`nHave a nice day" 
     
     }
-
-    New-Alias -Name "pa" Format-Audio
