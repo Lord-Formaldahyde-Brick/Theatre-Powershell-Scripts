@@ -18,7 +18,7 @@
     both for current user and system, if other user accounts need access
     The function should be copied and used from the Powershell User Profile file which is created by typing...
     New-Item -Path $profile -ItemType File -Force
-    This is created as %UserProfile%\Documents\Windows\Â­PowerShell\profile.ps1
+    This is created as %UserProfile%\Documents\Windows\­PowerShell\profile.ps1
     This script is my first in Powershell, it has taken a couple of days to get this script done. Bash and C are more familiar
     and you can see that in the code, although it works quite robustly and I think it's quite readable. However, much to learn me thinks!
  .LINK
@@ -36,6 +36,7 @@
     # User Args
     
         [CmdletBinding(PositionalBinding = $false)]
+        [alias("pa")]
         param (
             [Parameter(Mandatory = $false)]
             [float]$SetTargetGain,
@@ -50,10 +51,12 @@
         # functions
     
         function Convert2Wav () { 
-            foreach($file in Get-ChildItem -Name -Exclude processed-output){    
-                $name = Write-Output($file) | sed 's/\.[^.]*$//'  # remove file type suffix to leave just the name
-                $newFile = Write-Output("processed-output/"+ $name +".wav") 
-                ffmpeg -i $file -y $newFile # -y option allows unquestioned overwrite if output files exist
+            foreach($file in Get-ChildItem -Name -Exclude processed-output){ 
+                $cleanFile = $file | sed 's/[^a-zA-Z0-9 _.-]//g'   # remove illegal characters
+                Move-Item $file $cleanFile
+                $name = Write-Output($cleanFile) | sed 's/\.[^.]*$//'   # remove file type suffix to leave just the name               
+                $newFile = Write-Output("processed-output/" + $name + ".wav") 
+                ffmpeg -i $cleanFile -y $newFile # -y option allows unquestioned overwrite if output files exist
             }
         }
         
@@ -124,12 +127,14 @@
     
         Set-Location processed-output
         New-Item -Path ".\" -Name "output" -ItemType "directory"  
-     
-        # Either clean up user input to be 48k for SoX or force non-parameter/other entry to 44.1k
-        
+           
         Switch ( $SampleRate )
         {
             "96k" 
+            {
+                $SR = "96k"
+            }
+            "96000"
             {
                 $SR = "96k"
             }
@@ -137,7 +142,15 @@
             {
                 $SR = "88.2k"
             }
+            "88200" 
+            {
+                $SR = "88.2k"
+            }
             "48k" 
+            {
+                $SR = "48k"
+            }
+            "48000" 
             {
                 $SR = "48k"
             }
@@ -145,11 +158,23 @@
             {
                 $SR = "44.1k"
             }
+            "44100" 
+            {
+                $SR = "44.1k"
+            }
             "32k" 
             {
                 $SR = "32k"
             }
+            "32000" 
+            {
+                $SR = "32k"
+            }
             "16k" 
+            {
+                $SR = "16k"
+            }
+            "16000" 
             {
                 $SR = "16k"
             }
