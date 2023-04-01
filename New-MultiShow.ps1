@@ -18,16 +18,15 @@ function New-MultiShow {
             Set-Location ..
         }
     }
-    $d = Get-Date
-    $justDate = $d.tostring("dd-MM-yyyy")
-    [string]$fullName = "$showName"+"_"+"$justDate"
+    $d = Get-Date -Format "dd-MM-yyyy"
+    [string]$fullName = "$showName"+"_"+"$d"
     If (Test-Path $fullName){
     Write-Host "Folder exists, creating a unique name"
     $k = 1
-        [string]$extendName = "$ShowName"+"$k"+"_"+"$justDate"
+        [string]$extendName = "$ShowName"+"$k"+"_"+"$d"
         while (Test-Path $extendName) {
             $k++
-            [string]$extendName = "$ShowName"+"$k"+"_"+"$justDate"
+            [string]$extendName = "$ShowName"+"$k"+"_"+"$d"
         }
         New-Item -Name $extendName -ItemType Directory
         Set-Location $extendName

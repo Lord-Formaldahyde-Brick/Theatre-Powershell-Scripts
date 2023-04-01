@@ -5,16 +5,15 @@ function New-Show  {
     [Parameter(Mandatory = $True)]  
     [string]$showName
     )
-    $d = Get-Date
-    $justDate = $d.tostring("dd-MM-yyyy")
-    [string]$fullName = "$showName"+"_"+"$justDate"
+    $d = Get-Date -Format "dd-MM-yyyy"
+    [string]$fullName = "$showName"+"_"+"$d"
     If (Test-Path $fullName){
         Write-Host "Folder exists, creating a unique name"
         $i = 1
-        [string]$extendName = "$ShowName"+"$i"+"_"+"$justDate"
+        [string]$extendName = "$ShowName"+"$i"+"_"+"$d"
         while (Test-Path $extendName) {
             $i++
-            [string]$extendName = "$ShowName"+"$i"+"_"+"$justDate"
+            [string]$extendName = "$ShowName"+"$i"+"_"+"$d"
         }
         New-Item -Name $extendName -ItemType Directory
         Set-Location $extendName
