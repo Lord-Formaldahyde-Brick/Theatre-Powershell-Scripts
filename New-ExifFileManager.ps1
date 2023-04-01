@@ -5,7 +5,7 @@
 $jn = exiftool -j -q * 
 $jn = $jn | ConvertFrom-Json
 #$jn > data.json
-$dt = $jn.createdate | sed 's/ .*//' | sed 's/:/-/g'
-$dt
+[string]$dt = $jn.createdate #| sed 's/ .*//' | sed 's/:/-/g'
+$dt.Substring(0,10).Replace(":","-")
 
 
