@@ -86,10 +86,10 @@ Function Copy-RawVideo () {
             [string]$shortDate = $dt.Substring(0,10).Replace(":","-")
             $subFolderName = "$headFolder"+"$shortDate"
             # get basename of current file, used in 'file exist' test later
-            [string]$fullFileName = $file
-            $len = $fullFileName.Split("\").Length
+            #[string]$fullFileName = $file
+            $len = $file.Split("\").Length
             [int]$index = $len - 1
-            $fileToTest = $fullFileName.Split("\")[$index]
+            $fileToTest = $file.Split("\")[$index]
             Write-Host $fileToTest # report the basename for shits and giggles
 
             # Copying and Sorting
@@ -121,3 +121,5 @@ Function Copy-RawVideo () {
         }
         Set-Location ..
     }
+
+    
