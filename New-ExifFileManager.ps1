@@ -1,4 +1,4 @@
-Function Get-RawVideo () {
+Function Copy-RawVideo () {
     # ui for selecting files
     
         Add-Type -AssemblyName System.Windows.Forms
