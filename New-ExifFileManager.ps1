@@ -45,6 +45,7 @@ Function Get-RawVideo () {
         $listBox.Height = 240
         
         # Names can be easily added or removed here
+        
         [void] $listBox.Items.Add('Any John')
         [void] $listBox.Items.Add('Bethan Griffiths')
         [void] $listBox.Items.Add('Carolyn Davies')
@@ -96,7 +97,7 @@ Function Get-RawVideo () {
             [string]$storagePath = "C:\Users\admin\Desktop\RawVideo" # Change this path to where the videos are stored
     
             if ( Test-Path $storagePath\$headFolder\$subFolderName\$fileToTest -PathType Leaf) {
-            Write-Host "The file exists, moving on"
+                Write-Host "The file exists, moving on"
             }
             else {
                 if (Test-Path $storagePath\$headFolder) {
