@@ -1,6 +1,3 @@
-# Function for copying/sorting raw video or image files to Creator/Dated folders using Exif date stamp
-# requires Exiftool which can be obtained via an Admin Powershell: winget install Exiftool
-
 Function Get-RawVideo () {
     # ui for selecting files
     
@@ -87,26 +84,39 @@ Function Get-RawVideo () {
             [string]$dt = $jn.createdate
             [string]$shortDate = $dt.Substring(0,10).Replace(":","-")
             $subFolderName = "$headFolder"+"$shortDate"
+            # get basename of current file, used in 'file exist' test later
+            [string]$fullFileName = $file
+            $len = $fullFileName.Split("\").Length
+            [int]$index = $len - 1
+            $fileToTest = $fullFileName.Split("\")[$index]
+            Write-Host $fileToTest # report the basename for shits and giggles
+
+            # Copying and Sorting
     
             [string]$storagePath = "C:\Users\admin\Desktop\RawVideo" # Change this path to where the videos are stored
     
-            if (Test-Path $storagePath\$headFolder) {
-                if (Test-Path $storagePath\$headFolder\$subFolderName) {
-                Copy-Item $file $storagePath\$headFolder\$subFolderName
+            if ( Test-Path $storagePath\$headFolder\$subFolderName\$fileToTest -PathType Leaf) {
+            Write-Host "The file exists, moving on"
+            }
+            else {
+                if (Test-Path $storagePath\$headFolder) {
+                    if (Test-Path $storagePath\$headFolder\$subFolderName) {
+                        Copy-Item $file $storagePath\$headFolder\$subFolderName
+                    }
+                    else {
+                        Set-Location $storagePath\$headFolder
+                        New-Item -name $subFolderName -ItemType Directory
+                        Copy-Item $file $subFolderName
+                    }
                 }
                 else {
+                    Set-Location $storagePath
+                    New-Item -name $headFolder -ItemType Directory
                     Set-Location $storagePath\$headFolder
                     New-Item -name $subFolderName -ItemType Directory
                     Copy-Item $file $subFolderName
                 }
-            }
-            else {
-                Set-Location $storagePath
-                New-Item -name $headFolder -ItemType Directory
-                Set-Location $storagePath\$headFolder
-                New-Item -name $subFolderName -ItemType Directory
-                Copy-Item $file $subFolderName
-            }
+           } 
         }
         Set-Location ..
     }
