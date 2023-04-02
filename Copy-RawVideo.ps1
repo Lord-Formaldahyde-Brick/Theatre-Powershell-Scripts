@@ -77,18 +77,19 @@ Function Copy-RawVideo () {
             Write-Host "Bye"
             return
         }
-        # Copying and sorting files to datestamped folders
-    
+        # Get the datestamp from Exif
+
         foreach($file in $FilesArray){
-            $jn = exiftool -j -q $file  # get exif data
+            $jn = exiftool -j -q $file  
             $jn = $jn | ConvertFrom-Json
             [string]$dt = $jn.createdate
             [string]$shortDate = $dt.Substring(0,10).Replace(":","-")
             $subFolderName = "$headFolder"+"$shortDate"
-            # get basename of current file, used in 'file exist' test later
-            #[string]$fullFileName = $file
+
+        # get basename of current file, used in 'file exist' test later
+        
             $len = $file.Split("\").Length
-            [int]$index = $len - 1
+            $index = $len - 1
             $fileToTest = $file.Split("\")[$index]
             Write-Host $fileToTest # report the basename for shits and giggles
 
@@ -119,6 +120,7 @@ Function Copy-RawVideo () {
                 }
            } 
         }
+
         Set-Location ..
     }
 
