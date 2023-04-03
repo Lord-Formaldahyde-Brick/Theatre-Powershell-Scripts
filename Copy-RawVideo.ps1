@@ -128,7 +128,7 @@ Function Copy-RawVideo () {
                     Copy-Item $file $subFolderName
                 }
            } 
-           Write-Progress -Activity "Video Transfered" -Status "$([math]::round(($runTot/$totalTransfer) * 100,2))% of Files Completed" -Id 2  -PercentComplete $(($runTot/$totalTransfer) * 100)
+           Write-Progress -Activity "Video Transfered" -Status "$([math]::round(($runTot/$totalTransfer) * 100,2))% of transfer completed" -Id 2  -PercentComplete $(($runTot/$totalTransfer) * 100)
         }
         Set-Location ..
     }
