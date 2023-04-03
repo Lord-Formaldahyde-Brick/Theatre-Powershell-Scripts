@@ -69,9 +69,7 @@
         
         if ($result -eq [System.Windows.Forms.DialogResult]::OK)
         {
-            [string]$name = $listBox.SelectedItem
-            [string]$headFolder = $name.Replace(" ","")
-            
+            $headFolder = $($listBox.SelectedItem).Replace(" ","")   
         }
         else {
             Write-Host "Bye"
@@ -118,7 +116,7 @@
                     Copy-Item $file $subFolderName
                 }
            } 
-            Write-Progress -Activity "Getting Video" -Status "Done So far" -Id 2  -PercentComplete (($FilesArray.IndexOf($file) +1)/$FilesArray.Length*100)
+           Write-Progress -Activity "Video Transfered" -Status "$([math]::round((($FilesArray.IndexOf($file) +1)/$FilesArray.Length*100),2))% of Files Completed" -Id 2  -PercentComplete (($FilesArray.IndexOf($file) +1)/$FilesArray.Length*100)
         }
         Set-Location ..
     }
