@@ -1,4 +1,4 @@
-Function Copy-RawVideo () {
+    Function Copy-RawVideo () {
     # ui for selecting files
     
         Add-Type -AssemblyName System.Windows.Forms
@@ -87,9 +87,11 @@ Function Copy-RawVideo () {
         # get basename of current file, used in 'file exist' test later
         
             $maxIndex = $($file.Split("\").Length) - 1
-            $fileToTest = $file.Split("\")[$maxIndex]
-            Write-Host $fileToTest # report the basename for shits and giggles
+            $fileToTest = $file.Split("\")[$maxIndex]           
+            Write-Progress -Activity "Getting Video" -id 1 -Status "Copying $($fileToTest)"
+            
 
+            
             # Copying and Sorting
     
             [string]$storagePath = "C:\Users\admin\Desktop\RawVideo" # Change this path to where the videos are stored
@@ -116,9 +118,7 @@ Function Copy-RawVideo () {
                     Copy-Item $file $subFolderName
                 }
            } 
+            Write-Progress -Activity "Getting Video" -Status "Done So far" -Id 2  -PercentComplete (($FilesArray.IndexOf($file) +1)/$FilesArray.Length*100)
         }
-
         Set-Location ..
     }
-
-    
