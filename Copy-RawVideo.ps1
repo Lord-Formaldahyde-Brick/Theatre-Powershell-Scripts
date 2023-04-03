@@ -88,9 +88,8 @@ Function Copy-RawVideo () {
 
         # get basename of current file, used in 'file exist' test later
         
-            $len = $file.Split("\").Length
-            $index = $len - 1
-            $fileToTest = $file.Split("\")[$index]
+            $maxIndex = $($file.Split("\").Length) - 1
+            $fileToTest = $file.Split("\")[$maxIndex]
             Write-Host $fileToTest # report the basename for shits and giggles
 
             # Copying and Sorting
