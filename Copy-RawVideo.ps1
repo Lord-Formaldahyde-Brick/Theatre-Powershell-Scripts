@@ -80,10 +80,8 @@ Function Copy-RawVideo () {
         # Get the datestamp from Exif
 
         foreach($file in $FilesArray){
-            $jn = exiftool -j -q $file  
-            $jn = $jn | ConvertFrom-Json
-            [string]$dt = $jn.createdate
-            [string]$shortDate = $dt.Substring(0,10).Replace(":","-")
+            $jn = $(exiftool -j -q $file) | ConvertFrom-Json
+            $shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
             $subFolderName = "$headFolder"+"$shortDate"
 
         # get basename of current file, used in 'file exist' test later
