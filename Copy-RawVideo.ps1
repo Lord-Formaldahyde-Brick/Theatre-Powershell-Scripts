@@ -1,4 +1,4 @@
-    Function Copy-RawVideo () {
+Function Copy-RawVideo () {
     # ui for selecting files
     
         Add-Type -AssemblyName System.Windows.Forms
@@ -75,10 +75,22 @@
             Write-Host "Bye"
             return
         }
-        # Get the datestamp from Exif
+        #Calculate total file transfer in MB
 
+        $totalTransfer = 0
+        foreach($file in $FilesArray){
+            $j = $(exiftool -j -q $file) | ConvertFrom-Json
+            [float]$fileSize = $($j.FileSize).Replace(" MB","")
+            $totalTransfer = $totalTransfer + $fileSize
+        }
+
+        # Get the datestamp and fize size progress info from EXIF
+
+        [float]$runTot = 0
         foreach($file in $FilesArray){
             $jn = $(exiftool -j -q $file) | ConvertFrom-Json
+            [float]$singleFileSize = $($jn.FileSize).Replace(" MB","")
+            $runTot = $runTot + $singleFileSize
             $shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
             $subFolderName = "$headFolder"+"$shortDate"
 
@@ -116,7 +128,7 @@
                     Copy-Item $file $subFolderName
                 }
            } 
-           Write-Progress -Activity "Video Transfered" -Status "$([math]::round((($FilesArray.IndexOf($file) +1)/$FilesArray.Length*100),2))% of Files Completed" -Id 2  -PercentComplete (($FilesArray.IndexOf($file) +1)/$FilesArray.Length*100)
+           Write-Progress -Activity "Video Transfered" -Status "$([math]::round(($runTot/$totalTransfer) * 100,2))% of Files Completed" -Id 2  -PercentComplete $(($runTot/$totalTransfer) * 100)
         }
         Set-Location ..
     }
