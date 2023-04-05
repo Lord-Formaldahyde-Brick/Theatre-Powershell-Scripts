@@ -91,9 +91,14 @@ Function Copy-RawVideo () {
             $jn = $(exiftool -j -q $file) | ConvertFrom-Json
             [float]$singleFileSize = $($jn.FileSize).Replace(" MB","")
             $runTot = $runTot + $singleFileSize
-            [DateTime]$shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
-            [string]$shortDate = $shortDate.ToLongDateString()
-            $subFolderName = "$headFolder"+"-"+"$shortDate"
+
+          # [DateTime]$shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
+          # [string]$shortDate = $shortDate.ToLongDateString()
+          # $subFolderName = "$headFolder"+"-"+"$shortDate"
+
+            $shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
+            $subFolderName = "$headFolder"+"$shortDate"
+
 
         # get basename of current file, used in 'file exist' test later
         
