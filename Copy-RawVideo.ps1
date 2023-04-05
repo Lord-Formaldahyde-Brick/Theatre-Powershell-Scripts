@@ -91,8 +91,9 @@ Function Copy-RawVideo () {
             $jn = $(exiftool -j -q $file) | ConvertFrom-Json
             [float]$singleFileSize = $($jn.FileSize).Replace(" MB","")
             $runTot = $runTot + $singleFileSize
-            $shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
-            $subFolderName = "$headFolder"+"$shortDate"
+            [DateTime]$shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
+            [string]$shortDate = $shortDate.ToLongDateString()
+            $subFolderName = "$headFolder"+"-"+"$shortDate"
 
         # get basename of current file, used in 'file exist' test later
         
@@ -104,7 +105,7 @@ Function Copy-RawVideo () {
             
             # Copying and Sorting
     
-            [string]$storagePath = "C:\Users\admin\Desktop\RawVideo" # Change this path to where the videos are stored
+            [string]$storagePath = "D:\RawVideo" # Change this path to where the videos are stored
     
             if ( Test-Path $storagePath\$headFolder\$subFolderName\$fileToTest -PathType Leaf) {
                 Write-Host "The file exists, moving on"
