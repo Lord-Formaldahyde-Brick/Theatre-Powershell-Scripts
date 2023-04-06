@@ -41,7 +41,7 @@ function Get-Weather  {
     $weather = $wj | ConvertFrom-Json
     if ($days) {
         if ($days -ge 1 -and $days -le 10) {
-            $maxItems = $days * 8
+            $maxItems = $days * 24
         }
         else {
             $maxItems= $weather.hourly.time.length
@@ -69,10 +69,10 @@ function Get-Weather  {
             "Cloud-Cover" = $weather.hourly.cloudcover[$k];
             "Synopsis" = $Syn       
         }
-        $wob += $obj | Select-Object Day,Date,Time,Temperature-C,Dewpoint-C,Wind-Knots,Wind-Dir,Pressure-hPa,Precipitation-mm,Cloud-Cover,Synopsis
+        $wob += $obj | Select-Object Date,Time,Temperature-C,Dewpoint-C,Wind-Knots,Wind-Dir,Pressure-hPa,Precipitation-mm,Cloud-Cover,Synopsis
     }
 
-        $wob | Format-Table -AutoSize
+        $wob | Format-Table
 }
 
 Get-Weather -days 2
