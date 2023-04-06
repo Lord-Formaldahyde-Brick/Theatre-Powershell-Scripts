@@ -63,7 +63,7 @@ function Get-Weather  {
             "Temperature-2m" = "$($weather.hourly.temperature_2m[$k])" + [char]0x00b0 + "C"
             "Temperature-180m" = "$($weather.hourly.temperature_180m[$k])" + [char]0x00b0 + "C"
             "Dewpoint-2m" ="$($weather.hourly.dewpoint_2m[$k])" + [char]0x00b0 + "C"
-            "Cape" = "$($weather.hourly.cape[$k])" + "j/Kg"
+            "Cape" = "$($weather.hourly.cape[$k])" + "J/Kg"
             "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + "Km/h"
             "Wind-Dir-10m" = "$($weather.hourly.winddirection_10m[$k])" + [char]0x00b0
             "Wind-Speed-180m" = "$($weather.hourly.windspeed_180m[$k])" + "Km/h"
@@ -79,3 +79,4 @@ function Get-Weather  {
         $wob #| Format-Table
 }
 
+Get-Weather -hours 24
