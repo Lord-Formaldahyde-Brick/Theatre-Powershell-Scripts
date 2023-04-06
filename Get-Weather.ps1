@@ -9,9 +9,9 @@ function Get-Weather  {
     enum codes{
         <# Specify a list of distinct values #>
         Clear = 0
-        Mainly_clear = 1
-        Partly_cloudy = 2
-        Overcast = 3
+        Mainly_clear
+        Partly_cloudy
+        Overcast
         Fog = 45
         Depositing_rime_fog
         Light_drizzle = 51
