@@ -3,7 +3,7 @@ function Get-Weather  {
     [alias("gw")]
     param (
         [Parameter(Mandatory = $false)]           
-        [int]$days
+        [int]$hours
     )
 
     enum codes{
@@ -37,11 +37,11 @@ function Get-Weather  {
         Thunderstorm_with_slight_hail
         Thunderstorm_with_heavy_hail = 99
     }
-    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,cloudcover,windspeed_10m,winddirection_10m&models=best_match"
+    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,cloudcover,windspeed_10m,windspeed_180m,winddirection_10m,winddirection_180m,temperature_180m,cape&models=best_match"
     $weather = $wj | ConvertFrom-Json
-    if ($days) {
-        if ($days -ge 1 -and $days -le 10) {
-            $maxItems = $days * 24
+    if ($hours) {
+        if ($hours -ge 1 -and $hours -le 240) {
+            $maxItems = $hours
         }
         else {
             $maxItems= $weather.hourly.time.length
@@ -59,20 +59,24 @@ function Get-Weather  {
         $obj = New-Object psobject -Property @{
             "Day" = $dt.DayOfWeek
             "Date" = $dt.ToLongDateString()
-            "Time" = $weather.hourly.time[$k].split("T")[1];
-            "Temperature-C" = $weather.hourly.temperature_2m[$k];
-            "Dewpoint-C" =$weather.hourly.dewpoint_2m[$k]
-            "Wind-Knots" = $weather.hourly.windspeed_10m[$k];
-            "Wind-Dir" = $weather.hourly.winddirection_10m[$k];
-            "Pressure-hPa" =$weather.hourly.surface_pressure[$k];
-            "Precipitation-mm" = $weather.hourly.precipitation[$k];
-            "Cloud-Cover" = $weather.hourly.cloudcover[$k];
+            "Time" = $weather.hourly.time[$k].split("T")[1]
+            "Temperature-2m" = "$($weather.hourly.temperature_2m[$k])" + "°C"
+            "Temperature-180m" = "$($weather.hourly.temperature_180m[$k])" + "°C"
+            "Dewpoint" ="$($weather.hourly.dewpoint_2m[$k])" + "°C"
+            "Cape" = "$($weather.hourly.cape[$k])" + "j/Kg"
+            "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + "Km/h"
+            "Wind-Dir-10m" = "$($weather.hourly.winddirection_10m[$k])" + "°"
+            "Wind-Speed-180m" = "$($weather.hourly.windspeed_180m[$k])" + "Km/h"
+            "Wind-Dir-180m" = "$($weather.hourly.winddirection_180m[$k])" + "°"
+            "Surface-Pressure" ="$($weather.hourly.surface_pressure[$k])" + "hPa"
+            "Precipitation" = "$($weather.hourly.precipitation[$k])" + "mm"
+            "Cloud-Cover" = "$($weather.hourly.cloudcover[$k])" + "%"
             "Synopsis" = $Syn       
         }
-        $wob += $obj | Select-Object Date,Time,Temperature-C,Dewpoint-C,Wind-Knots,Wind-Dir,Pressure-hPa,Precipitation-mm,Cloud-Cover,Synopsis
+        $wob += $obj | Select-Object Date,Time,Temperature-2m,Temperature-180m,Dewpoint,Cape,Wind-Speed-10m,Wind-Dir-10m,Wind-Speed-180m,Wind-Dir-180m,Surface-Pressure,Precipitation,Cloud-Cover,Synopsis
     }
 
-        $wob | Format-Table
+        $wob #| Format-Table
 }
 
-Get-Weather -days 2
+Get-Weather -hours 24
