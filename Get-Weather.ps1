@@ -62,7 +62,7 @@ function Get-Weather  {
             "Time" = $weather.hourly.time[$k].split("T")[1]
             "Temperature-2m" = "$($weather.hourly.temperature_2m[$k])" + "°C"
             "Temperature-180m" = "$($weather.hourly.temperature_180m[$k])" + "°C"
-            "Dewpoint" ="$($weather.hourly.dewpoint_2m[$k])" + "°C"
+            "Dewpoint-2m" ="$($weather.hourly.dewpoint_2m[$k])" + "°C"
             "Cape" = "$($weather.hourly.cape[$k])" + "j/Kg"
             "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + "Km/h"
             "Wind-Dir-10m" = "$($weather.hourly.winddirection_10m[$k])" + "°"
@@ -73,7 +73,7 @@ function Get-Weather  {
             "Cloud-Cover" = "$($weather.hourly.cloudcover[$k])" + "%"
             "Synopsis" = $Syn       
         }
-        $wob += $obj | Select-Object Date,Time,Temperature-2m,Temperature-180m,Dewpoint,Cape,Wind-Speed-10m,Wind-Dir-10m,Wind-Speed-180m,Wind-Dir-180m,Surface-Pressure,Precipitation,Cloud-Cover,Synopsis
+        $wob += $obj | Select-Object Date,Time,Temperature-2m,Temperature-180m,Dewpoint-2m,Cape,Wind-Speed-10m,Wind-Dir-10m,Wind-Speed-180m,Wind-Dir-180m,Surface-Pressure,Precipitation,Cloud-Cover,Synopsis
     }
 
         $wob #| Format-Table
