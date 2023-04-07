@@ -37,10 +37,10 @@ function Get-Weather  {
         Thunderstorm_with_slight_hail
         Thunderstorm_with_heavy_hail = 99
     }
-    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,cloudcover,windspeed_10m,windspeed_180m,winddirection_10m,winddirection_180m,temperature_180m,cape&models=best_match"
+    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,pressure_msl,cloudcover,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windspeed_180m,winddirection_10m,winddirection_180m,temperature_180m,cape&models=best_match"
     $weather = $wj | ConvertFrom-Json
     if ($hours) {
-        if ($hours -ge 1 -and $hours -le 240) {
+        if ($hours -ge 1 -and $hours -le 168) {
             $maxItems = $hours
         }
         else {
@@ -77,15 +77,19 @@ function Get-Weather  {
             "Wind-Dir-10m" = "$($weather.hourly.winddirection_10m[$k])" + [char]0x00b0
             "Wind-Speed-180m" = "$($weather.hourly.windspeed_180m[$k])" + " Km/h" + " " + $windspeedConvToMile180m + " Mph" + " " + $windspeedConvToKnot180m + " kts"
             "Wind-Dir-180m" = "$($weather.hourly.winddirection_180m[$k])" + [char]0x00b0
+            "Pressure-MSL" ="$($weather.hourly.pressure_msl[$k])" + " hPa"
             "Surface-Pressure" ="$($weather.hourly.surface_pressure[$k])" + " hPa"
             "Precipitation" = "$($weather.hourly.precipitation[$k])" + " mm"
             "Cloud-Cover" = "$($weather.hourly.cloudcover[$k])" + "%"
+            "Cloud-Cover-Below-3Km" = "$($weather.hourly.cloudcover_low[$k])" + "%"
+            "Cloud-Cover-3Km-to-8Km" = "$($weather.hourly.cloudcover_mid[$k])" + "%"
+            "Cloud-Cover-Above-8Km" = "$($weather.hourly.cloudcover_high[$k])" + "%"
             "Synopsis" = $Syn       
         }
-        $wob += $obj | Select-Object Date,Time,Temperature-2m,Temperature-180m,Dewpoint-2m,CAPE,Wind-Speed-10m,Wind-Dir-10m,Wind-Speed-180m,Wind-Dir-180m,Surface-Pressure,Precipitation,Cloud-Cover,Synopsis
+        $wob += $obj | Select-Object Date,Time,Temperature-2m,Temperature-180m,Dewpoint-2m,CAPE,Wind-Speed-10m,Wind-Dir-10m,Wind-Speed-180m,Wind-Dir-180m,Pressure-MSL,Surface-Pressure,Precipitation,Cloud-Cover,Cloud-Cover-Below-3Km,Cloud-Cover-3Km-to-8Km,Cloud-Cover-Above-8Km,Synopsis
     }
 
         $wob #| Format-Table
 }
 
-Get-Weather -hours 24
+gw 18
