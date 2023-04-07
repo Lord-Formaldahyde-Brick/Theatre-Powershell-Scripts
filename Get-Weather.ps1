@@ -5,7 +5,49 @@ function Get-Weather  {
         [Parameter(Mandatory = $false)]           
         [int]$hours
     )
+    function makeCharts  {
+       param (
+        # Parameter help description
+        [Parameter(Mandatory = $True)]
+        $maxItems
+       )
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Windows.Forms.DataVisualization
 
+    # create form
+    $chartForm = New-Object System.Windows.Forms.Form
+    $chartForm.Width = 600
+    $chartForm.Height = 600             
+
+    #Create chart
+    $chart1 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
+    $chart1.Width = 500
+    $chart1.Height = 500
+    $chart1.Left = 40
+    $chart1.Top = 30
+    $chart1.Padding = 0
+
+    # create chart area
+    $chart1Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
+    $chart1.ChartAreas.Add($chart1Area)
+    $chartTemperature = @()
+    for ($k=0; $k -lt $maxItems; $k++){
+        [DateTime]$tm = $weather.hourly.time[$k].split("T")[1]
+        $chartOb = @{
+            "time" =  $tm.Hour
+            "temp10m" = [double]"$($weather.hourly.temperature_2m[$k])"
+        }
+    
+        $chartTemperature += $chartOb | Select-Object time,temp10m
+    }
+        $series1 = $chart1.Series.Add("Temperature")
+        $series1.ChartType = "Line"
+        $series1.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp10m)
+
+        $chartForm.Controls.Add($chart1)
+        $chartForm.ShowDialog()
+    }
+    
     enum codes{
         <# Specify a list of distinct values #>
         Clear = 0
@@ -51,6 +93,7 @@ function Get-Weather  {
         $maxItems= $weather.hourly.time.length
     }
     $wob = @()
+    
     for ($k=0; $k -lt $maxItems; $k++){
         $dt = [DateTime]$weather.hourly.time[$k].split("T")[0];
         [int]$wcode = $weather.hourly.weathercode[$k]
@@ -86,10 +129,14 @@ function Get-Weather  {
             "Cloud-Cover-Above-8Km" = "$($weather.hourly.cloudcover_high[$k])" + "%"
             "Synopsis" = $Syn       
         }
+        
         $wob += $obj | Select-Object Date,Time,Temperature-2m,Temperature-180m,Dewpoint-2m,CAPE,Wind-Speed-10m,Wind-Dir-10m,Wind-Speed-180m,Wind-Dir-180m,Pressure-MSL,Surface-Pressure,Precipitation,Cloud-Cover,Cloud-Cover-Below-3Km,Cloud-Cover-3Km-to-8Km,Cloud-Cover-Above-8Km,Synopsis
+        
     }
 
-        $wob #| Format-Table
+        $wob
+        makeCharts -maxItems $maxItems
+        
 }
 
 gw 18
