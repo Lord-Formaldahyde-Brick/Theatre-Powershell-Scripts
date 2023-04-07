@@ -16,13 +16,13 @@ function Get-Weather  {
 
     # create form
     $chartForm = New-Object System.Windows.Forms.Form
-    $chartForm.Width = 600
-    $chartForm.Height = 600             
+    $chartForm.Width = 1600
+    $chartForm.Height = 900             
 
     #Create chart
     $chart1 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
-    $chart1.Width = 500
-    $chart1.Height = 500
+    $chart1.Width = 1500
+    $chart1.Height = 800
     $chart1.Left = 40
     $chart1.Top = 30
     $chart1.Padding = 0
@@ -30,19 +30,29 @@ function Get-Weather  {
     # create chart area
     $chart1Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
     $chart1.ChartAreas.Add($chart1Area)
+    
+    
+
+
+    $chart1.Titles.Add("Temperature at 2m")
+    $chart1Area.AxisX.Title = "Time"
+    $chart1Area.AxisY.Title = "Temperature"
+
     $chartTemperature = @()
     for ($k=0; $k -lt $maxItems; $k++){
-        [DateTime]$tm = $weather.hourly.time[$k].split("T")[1]
+        [string]$tm = $weather.hourly.time[$k]#.split("T")[1]
         $chartOb = @{
-            "time" =  $tm.Hour
+            "time" =  $tm
             "temp10m" = [double]"$($weather.hourly.temperature_2m[$k])"
         }
     
         $chartTemperature += $chartOb | Select-Object time,temp10m
     }
+        
         $series1 = $chart1.Series.Add("Temperature")
-        $series1.ChartType = "Line"
+        $series1.ChartType = "Spline"
         $series1.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp10m)
+        
 
         $chartForm.Controls.Add($chart1)
         $chartForm.ShowDialog()
@@ -138,3 +148,4 @@ function Get-Weather  {
         makeCharts -maxItems $maxItems
         
 }
+
