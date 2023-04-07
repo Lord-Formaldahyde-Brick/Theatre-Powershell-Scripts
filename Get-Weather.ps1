@@ -21,22 +21,25 @@ function Get-Weather  {
 
     #Create chart
     $chart1 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
-    $chart1.Width = 1500
-    $chart1.Height = 800
+    $chart1.Width = 1200
+    $chart1.Height = 600
     $chart1.Left = 40
     $chart1.Top = 30
-    $chart1.Padding = 0
+    $chart1.Padding = 10
+
 
     # create chart area
     $chart1Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
     $chart1.ChartAreas.Add($chart1Area)
     
-    
-
-
-    $chart1.Titles.Add("Temperature at 2m")
+    $chart1Title = New-Object System.Windows.Forms.DataVisualization.Charting.Title
+    $chart1Title.Text = "Temperature at 2m"
+    $titleFont = New-Object System.Drawing.Font @('Microsoft Sans Serif', '18',[System.Drawing.FontStyle]::Bold)
+    $chart1Title.Font = $titleFont
+    $chart1.Titles.Add($chart1Title)
     $chart1Area.AxisX.Title = "Time"
     $chart1Area.AxisY.Title = "Temperature"
+    $chart1Area.BackColor ="SkyBlue"
 
     $chartTemperature = @()
     for ($k=0; $k -lt $maxItems; $k++){
@@ -51,6 +54,14 @@ function Get-Weather  {
         
         $series1 = $chart1.Series.Add("Temperature")
         $series1.ChartType = "Spline"
+        $series1.Color = "White"
+        $series1.IsValueShownAsLabel = $True
+        $series1.IsXValueIndexed = $True
+        $series1.BorderWidth = 3
+        
+
+        
+
         $series1.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp10m)
         
 
@@ -149,3 +160,4 @@ function Get-Weather  {
         
 }
 
+gw 24
