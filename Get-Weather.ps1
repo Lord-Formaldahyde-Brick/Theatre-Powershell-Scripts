@@ -138,5 +138,3 @@ function Get-Weather  {
         makeCharts -maxItems $maxItems
         
 }
-
-gw 18
