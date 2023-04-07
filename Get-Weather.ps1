@@ -56,6 +56,15 @@ function Get-Weather  {
         [int]$wcode = $weather.hourly.weathercode[$k]
         [string]$Syn = [codes].GetEnumName($wcode)
         $Syn = $Syn.Replace("_", " ")
+        $windspeedConvToMile10m = ($weather.hourly.windspeed_10m[$k]) * 0.621371
+        $windspeedConvToMile10m = [math]::round($windspeedConvToMile10m,2)
+        $windspeedConvToMile180m = ($weather.hourly.windspeed_180m[$k]) * 0.621371
+        $windspeedConvToMile180m = [math]::round($windspeedConvToMile180m,2)
+        $windspeedConvToKnot10m = ($weather.hourly.windspeed_10m[$k]) * 0.539957
+        $windspeedConvToKnot10m = [math]::round($windspeedConvToKnot10m,2)
+        $windspeedConvToKnot180m = ($weather.hourly.windspeed_180m[$k]) * 0.539957
+        $windspeedConvToKnot180m = [math]::round($windspeedConvToKnot180m,2)
+
         $obj = New-Object psobject -Property @{
             "Day" = $dt.DayOfWeek
             "Date" = $dt.ToLongDateString()
@@ -64,9 +73,9 @@ function Get-Weather  {
             "Temperature-180m" = "$($weather.hourly.temperature_180m[$k])" + [char]0x00b0 + "C"
             "Dewpoint-2m" ="$($weather.hourly.dewpoint_2m[$k])" + [char]0x00b0 + "C"
             "CAPE" = "$($weather.hourly.cape[$k])" + " J/Kg"
-            "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + " Km/h"
+            "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + " Km/h" + " " + $windspeedConvToMile10m + " Mph" + " " + $windspeedConvToKnot10m + " kts"
             "Wind-Dir-10m" = "$($weather.hourly.winddirection_10m[$k])" + [char]0x00b0
-            "Wind-Speed-180m" = "$($weather.hourly.windspeed_180m[$k])" + " Km/h"
+            "Wind-Speed-180m" = "$($weather.hourly.windspeed_180m[$k])" + " Km/h" + " " + $windspeedConvToMile180m + " Mph" + " " + $windspeedConvToKnot180m + " kts"
             "Wind-Dir-180m" = "$($weather.hourly.winddirection_180m[$k])" + [char]0x00b0
             "Surface-Pressure" ="$($weather.hourly.surface_pressure[$k])" + " hPa"
             "Precipitation" = "$($weather.hourly.precipitation[$k])" + " mm"
