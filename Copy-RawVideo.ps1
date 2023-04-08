@@ -75,21 +75,30 @@ Function Copy-RawVideo () {
             Write-Host "Bye"
             return
         }
-        #Calculate total file transfer in MB
+        #Calculate total file transfer
 
         $totalTransfer = 0
         foreach($file in $FilesArray){
             $j = $(exiftool -j -q $file) | ConvertFrom-Json
-            [float]$fileSize = $($j.FileSize).Replace(" MB","")
+            $fileSize = $j.FileSize.split(" ")
+            $fileSize = $fileSize[0]
+            if ($fileSize[1] -eq "GB") {
+                $fileSize * 1024
+            }
+
             $totalTransfer = $totalTransfer + $fileSize
         }
 
-        # Get the datestamp and fize size progress info from EXIF
+        # Get the datestamp and file size progress info from EXIF
 
-        [float]$runTot = 0
+        $runTot = 0
         foreach($file in $FilesArray){
             $jn = $(exiftool -j -q $file) | ConvertFrom-Json
-            [float]$singleFileSize = $($jn.FileSize).Replace(" MB","")
+            $singleFileSize = $jn.FileSize.split(" ")
+            $singleFileSize = $singleFileSize[0]
+            if ($singleFileSize[1] -eq "GB") {
+                $singleFileSize * 1024
+            }
             $runTot = $runTot + $singleFileSize
 
           # [DateTime]$shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
