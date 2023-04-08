@@ -5,68 +5,66 @@ function Get-Weather  {
         [Parameter(Mandatory = $false)]           
         [int]$hours
     )
+
+    [string]$today = Get-Date
+    $today = $today.substring(0,10)
+    $today = $today.replace("/", "-")
+    
     function makeCharts  {
        param (
         # Parameter help description
         [Parameter(Mandatory = $True)]
         $maxItems
        )
-        Add-Type -AssemblyName System.Windows.Forms
+        #Add-Type -AssemblyName System.Windows.Forms
         Add-Type -AssemblyName System.Windows.Forms.DataVisualization
 
-    # create form
-    $chartForm = New-Object System.Windows.Forms.Form
-    $chartForm.Width = 1600
-    $chartForm.Height = 900             
+           
 
-    #Create chart
-    $chart1 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
-    $chart1.Width = 1200
-    $chart1.Height = 600
-    $chart1.Left = 40
-    $chart1.Top = 30
-    $chart1.Padding = 10
-
-
-    # create chart area
-    $chart1Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
-    $chart1.ChartAreas.Add($chart1Area)
+        #Create chart
+        $chart1 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
+        $chart1.Width = 900
+        $chart1.Height = 400
     
-    $chart1Title = New-Object System.Windows.Forms.DataVisualization.Charting.Title
-    $chart1Title.Text = "Temperature at 2m"
-    $titleFont = New-Object System.Drawing.Font @('Microsoft Sans Serif', '18',[System.Drawing.FontStyle]::Bold)
-    $chart1Title.Font = $titleFont
-    $chart1.Titles.Add($chart1Title)
-    $chart1Area.AxisX.Title = "Time"
-    $chart1Area.AxisY.Title = "Temperature"
-    $chart1Area.BackColor ="SkyBlue"
 
-    $chartTemperature = @()
-    for ($k=0; $k -lt $maxItems; $k++){
-        [string]$tm = $weather.hourly.time[$k]#.split("T")[1]
-        $chartOb = @{
-            "time" =  $tm
-            "temp10m" = [double]"$($weather.hourly.temperature_2m[$k])"
+        # create chart area
+        $chart1Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
+        $chart1.ChartAreas.Add($chart1Area)
+    
+        $chart1Title = New-Object System.Windows.Forms.DataVisualization.Charting.Title
+        $chart1Title.Text = "Temperature at 2m - $($hours) Hours"
+        $titleFont = New-Object System.Drawing.Font @('Microsoft Sans Serif', '18',[System.Drawing.FontStyle]::Bold)
+        $chart1Title.Font = $titleFont
+        $chart1.Titles.Add($chart1Title)
+        $chart1Area.AxisX.Title = "Time"
+        $chart1Area.AxisY.Title = "Temperature"
+        $chart1Area.BackColor ="SkyBlue"
+
+        $chartTemperature = @()
+        for ($k=0; $k -lt $maxItems; $k++){
+            [string]$tm = $weather.hourly.time[$k]#.split("T")[1]
+            $chartOb = @{
+                "time" =  $tm
+                "temp10m" = [double]"$($weather.hourly.temperature_2m[$k])"
+            }
+    
+            $chartTemperature += $chartOb | Select-Object time,temp10m
         }
-    
-        $chartTemperature += $chartOb | Select-Object time,temp10m
-    }
         
         $series1 = $chart1.Series.Add("Temperature")
         $series1.ChartType = "Spline"
         $series1.Color = "White"
         $series1.IsValueShownAsLabel = $True
-        $series1.IsXValueIndexed = $True
         $series1.BorderWidth = 3
-        
 
-        
+        if (-not (Test-Path -path C:\Users\admin\Desktop\WeatherCharts\$today)) {
+        New-Item -Path C:\Users\admin\Desktop\WeatherCharts\$today -ItemType Directory
+        }
 
         $series1.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp10m)
-        
-
-        $chartForm.Controls.Add($chart1)
-        $chartForm.ShowDialog()
+        $temp2mImageFile = "C:\Users\admin\Desktop\WeatherCharts\$($today)\Temp2m_$($today)_$($hours)hours.png"
+        $chart1.SaveImage($temp2mImageFile,'PNG')
+       # Start-Process $temp2mImageFile
     }
     
     enum codes{
@@ -160,4 +158,4 @@ function Get-Weather  {
         
 }
 
-gw 24
+
