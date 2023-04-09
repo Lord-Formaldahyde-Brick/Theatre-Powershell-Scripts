@@ -98,7 +98,7 @@ function Get-Weather  {
         Thunderstorm_with_slight_hail
         Thunderstorm_with_heavy_hail = 99
     }
-    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,pressure_msl,cloudcover,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windspeed_180m,winddirection_10m,winddirection_180m,temperature_180m,cape&models=best_match"
+    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&elevation=50&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,pressure_msl,cloudcover,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windspeed_180m,winddirection_10m,winddirection_180m,temperature_180m,cape&models=best_match"
     $weather = $wj | ConvertFrom-Json
     if ($hours) {
         if ($hours -ge 1 -and $hours -le 168) {
@@ -158,4 +158,4 @@ function Get-Weather  {
         
 }
 
-
+gw 48
