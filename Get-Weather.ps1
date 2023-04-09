@@ -23,16 +23,16 @@ function Get-Weather  {
 
         #Create chart
         $chart1 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
-        $chart1.Width = 900
-        $chart1.Height = 400
-    
+        $chart1.Width = 1600
+        $chart1.Height = 900  
 
         # create chart area
         $chart1Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
         $chart1.ChartAreas.Add($chart1Area)
     
         $chart1Title = New-Object System.Windows.Forms.DataVisualization.Charting.Title
-        $chart1Title.Text = "Temperature at 2m - $($hours) Hours"
+        $chart1Title.Text = "Temperature - $($hours) Hours"
+
         $titleFont = New-Object System.Drawing.Font @('Microsoft Sans Serif', '18',[System.Drawing.FontStyle]::Bold)
         $chart1Title.Font = $titleFont
         $chart1.Titles.Add($chart1Title)
@@ -40,31 +40,56 @@ function Get-Weather  {
         $chart1Area.AxisY.Title = "Temperature"
         $chart1Area.BackColor ="SkyBlue"
 
+
         $chartTemperature = @()
         for ($k=0; $k -lt $maxItems; $k++){
             [string]$tm = $weather.hourly.time[$k]#.split("T")[1]
             $chartOb = @{
                 "time" =  $tm
-                "temp10m" = [double]"$($weather.hourly.temperature_2m[$k])"
+                "temp2m" = [double]"$($weather.hourly.temperature_2m[$k])"
+                "temp180m" = [double]"$($weather.hourly.temperature_180m[$k])"
+                "temp850hPa" =[double]"$($weather.hourly.temperature_850hPa[$k])"
+                "dp" = [double]"$($weather.hourly.dewpoint_2m[$k])"
+
             }
     
-            $chartTemperature += $chartOb | Select-Object time,temp10m
+            $chartTemperature += $chartOb | Select-Object time,temp2m,temp180m,temp850hPa,dp
         }
         
-        $series1 = $chart1.Series.Add("Temperature")
+        $series1 = $chart1.Series.Add("Temperature2m")
         $series1.ChartType = "Spline"
-        $series1.Color = "White"
+        $series1.Color = "Red"
         $series1.IsValueShownAsLabel = $True
         $series1.BorderWidth = 3
+
+        $series2 = $chart1.Series.Add("Temperature180m")
+        $series2.ChartType = "Spline"
+        $series2.Color = "Yellow"
+        $series2.IsValueShownAsLabel = $True
+        $series2.BorderWidth = 3
+
+        $series3 = $chart1.Series.Add("Temperature850hPa")
+        $series3.ChartType = "Spline"
+        $series3.Color = "Green"
+        $series3.IsValueShownAsLabel = $True
+        $series3.BorderWidth = 3
+
+        $series4 = $chart1.Series.Add("Dewpoint2m")
+        $series4.ChartType = "Spline"
+        $series4.Color = "Black"
+        $series4.IsValueShownAsLabel = $True
+        $series4.BorderWidth = 3
 
         if (-not (Test-Path -path C:\Users\admin\Desktop\WeatherCharts\$today)) {
         New-Item -Path C:\Users\admin\Desktop\WeatherCharts\$today -ItemType Directory
         }
 
-        $series1.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp10m)
+        $series1.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp2m)
+        $series2.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp180m)
+        $series3.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp850hPa)
+        $series4.Points.DataBindXY($chartTemperature.Time,$chartTemperature.dp)
         $temp2mImageFile = "C:\Users\admin\Desktop\WeatherCharts\$($today)\Temp2m_$($today)_$($hours)hours.png"
         $chart1.SaveImage($temp2mImageFile,'PNG')
-       # Start-Process $temp2mImageFile
     }
     
     enum codes{
@@ -98,7 +123,7 @@ function Get-Weather  {
         Thunderstorm_with_slight_hail
         Thunderstorm_with_heavy_hail = 99
     }
-    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&elevation=50&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,pressure_msl,cloudcover,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windspeed_180m,winddirection_10m,winddirection_180m,temperature_180m,cape&models=best_match"
+    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&elevation=50&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,pressure_msl,cloudcover,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windspeed_180m,winddirection_10m,winddirection_180m,temperature_180m,cape,temperature_850hPa,dewpoint_850hPa&models=best_match"
     $weather = $wj | ConvertFrom-Json
     if ($hours) {
         if ($hours -ge 1 -and $hours -le 168) {
@@ -133,7 +158,9 @@ function Get-Weather  {
             "Time" = $weather.hourly.time[$k].split("T")[1]
             "Temperature-2m" = "$($weather.hourly.temperature_2m[$k])" + [char]0x00b0 + "C"
             "Temperature-180m" = "$($weather.hourly.temperature_180m[$k])" + [char]0x00b0 + "C"
+            "Temperature-850hPa" ="$($weather.hourly.temperature_850hPa[$k])" + [char]0x00b0 + "C"
             "Dewpoint-2m" ="$($weather.hourly.dewpoint_2m[$k])" + [char]0x00b0 + "C"
+            "Dewpoint-850hPa" ="$($weather.hourly.dewpoint_850hPa[$k])" + [char]0x00b0 + "C"
             "CAPE" = "$($weather.hourly.cape[$k])" + " J/Kg"
             "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + " Km/h" + " " + $windspeedConvToMile10m + " Mph" + " " + $windspeedConvToKnot10m + " kts"
             "Wind-Dir-10m" = "$($weather.hourly.winddirection_10m[$k])" + [char]0x00b0
@@ -149,7 +176,7 @@ function Get-Weather  {
             "Synopsis" = $Syn       
         }
         
-        $wob += $obj | Select-Object Date,Time,Temperature-2m,Temperature-180m,Dewpoint-2m,CAPE,Wind-Speed-10m,Wind-Dir-10m,Wind-Speed-180m,Wind-Dir-180m,Pressure-MSL,Surface-Pressure,Precipitation,Cloud-Cover,Cloud-Cover-Below-3Km,Cloud-Cover-3Km-to-8Km,Cloud-Cover-Above-8Km,Synopsis
+        $wob += $obj | Select-Object Date,Time,Temperature-2m,Dewpoint-2m,Temperature-180m,Temperature-850hPa,Dewpoint-850hPa,CAPE,Wind-Speed-10m,Wind-Dir-10m,Wind-Speed-180m,Wind-Dir-180m,Pressure-MSL,Surface-Pressure,Precipitation,Cloud-Cover-Below-3Km,Cloud-Cover-3Km-to-8Km,Cloud-Cover-Above-8Km,Synopsis
         
     }
 
