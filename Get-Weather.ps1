@@ -8,7 +8,7 @@ function Get-Weather  {
 
     [string]$today = Get-Date
     $today = $today.substring(0,10)
-    $today = $today.replace("/", "-")
+    $today = "Weather_$($today.replace("/", "-"))"
     
     function makeCharts  {
        param (
@@ -24,7 +24,7 @@ function Get-Weather  {
         #Create chart
         $chart1 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $chart1.Width = 1600
-        $chart1.Height = 900  
+        $chart1.Height = 900
 
         # create chart area
         $chart1Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
@@ -49,11 +49,13 @@ function Get-Weather  {
                 "temp2m" = [double]"$($weather.hourly.temperature_2m[$k])"
                 "temp180m" = [double]"$($weather.hourly.temperature_180m[$k])"
                 "temp850hPa" =[double]"$($weather.hourly.temperature_850hPa[$k])"
-                "dp" = [double]"$($weather.hourly.dewpoint_2m[$k])"
+                "dp2m" = [double]"$($weather.hourly.dewpoint_2m[$k])"
+                "dp850hPa" = [double]"$($weather.hourly.dewpoint_850hPa[$k])"
+                "cp" = [double]"$($weather.hourly.cape[$k])"
 
             }
     
-            $chartTemperature += $chartOb | Select-Object time,temp2m,temp180m,temp850hPa,dp
+            $chartTemperature += $chartOb | Select-Object time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp
         }
         
         $series1 = $chart1.Series.Add("Temperature2m")
@@ -80,6 +82,19 @@ function Get-Weather  {
         $series4.IsValueShownAsLabel = $True
         $series4.BorderWidth = 3
 
+        $series5 = $chart1.Series.Add("Dewpoint850hPa")
+        $series5.ChartType = "Spline"
+        $series5.Color = "White"
+        $series5.IsValueShownAsLabel = $True
+        $series5.BorderWidth = 3
+
+        $leg1 = $chart1.Legends.Add("TemperatureKeys")
+        $leg1.BackColor ="skyblue"
+        $leg1.BorderColor = "black"
+        
+        
+        
+
         if (-not (Test-Path -path C:\Users\admin\Desktop\WeatherCharts\$today)) {
         New-Item -Path C:\Users\admin\Desktop\WeatherCharts\$today -ItemType Directory
         }
@@ -87,9 +102,11 @@ function Get-Weather  {
         $series1.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp2m)
         $series2.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp180m)
         $series3.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp850hPa)
-        $series4.Points.DataBindXY($chartTemperature.Time,$chartTemperature.dp)
-        $temp2mImageFile = "C:\Users\admin\Desktop\WeatherCharts\$($today)\Temp2m_$($today)_$($hours)hours.png"
+        $series4.Points.DataBindXY($chartTemperature.Time,$chartTemperature.dp2m)
+        $series5.Points.DataBindXY($chartTemperature.Time,$chartTemperature.dp850hPa)
+        $temp2mImageFile = "C:\Users\admin\Desktop\WeatherCharts\$($today)\Temp_$($today)_$($hours)hours.png"
         $chart1.SaveImage($temp2mImageFile,'PNG')
+        
     }
     
     enum codes{
@@ -185,4 +202,4 @@ function Get-Weather  {
         
 }
 
-gw 48
+gw 24
