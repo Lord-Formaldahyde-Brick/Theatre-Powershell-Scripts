@@ -69,50 +69,49 @@ function Get-Weather  {
             $weatheChartingObjects += $chartingItems | Select-Object time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp
         }
         
-        $series1 = $chart1.Series.Add("Temperature2m")
+        $series1 = $chart1.Series.Add("Temp2m")
         $series1.ChartType = "Spline"
         $series1.Color = "Red"
         $series1.IsValueShownAsLabel = $True
         $series1.BorderWidth = 3
 
-        $series2 = $chart1.Series.Add("Temperature180m")
+        $series2 = $chart1.Series.Add("Temp180m")
         $series2.ChartType = "Spline"
         $series2.Color = "Yellow"
         $series2.IsValueShownAsLabel = $True
         $series2.BorderWidth = 3
 
-        $series3 = $chart1.Series.Add("Temperature850hPa")
+        $series3 = $chart1.Series.Add("Temp850hPa")
         $series3.ChartType = "Spline"
         $series3.Color = "Green"
         $series3.IsValueShownAsLabel = $True
         $series3.BorderWidth = 3
 
-        $series4 = $chart1.Series.Add("Dewpoint2m")
+        $series4 = $chart1.Series.Add("DP2m")
         $series4.ChartType = "Spline"
         $series4.Color = "Black"
         $series4.IsValueShownAsLabel = $True
         $series4.BorderWidth = 3
 
-        $series5 = $chart1.Series.Add("Dewpoint850hPa")
+        $series5 = $chart1.Series.Add("DP850hPa")
         $series5.ChartType = "Spline"
         $series5.Color = "White"
         $series5.IsValueShownAsLabel = $True
         $series5.BorderWidth = 3
 
-        $series6 = $chart2.Series.Add("CAPE")
+        $series6 = $chart2.Series.Add("CAPE-J/Kg ")
         $series6.ChartType = "Spline"
         $series6.Color = "Orange"
         $series6.IsValueShownAsLabel = $True
         $series6.BorderWidth = 3
 
-
-
         $leg1 = $chart1.Legends.Add("TemperatureKeys")
         $leg1.BackColor ="skyblue"
-        $leg1.BorderColor = "black"
+        $leg1.BorderColor = "black"     
         
-        
-        
+        $leg2 = $chart2.Legends.Add("CAPEKey")
+        $leg2.BackColor ="skyblue"
+        $leg2.BorderColor = "black" 
 
         if (-not (Test-Path -path C:\Users\admin\Desktop\WeatherCharts\$today)) {
         New-Item -Path C:\Users\admin\Desktop\WeatherCharts\$today -ItemType Directory
@@ -219,17 +218,26 @@ function Get-Weather  {
         
     }
 
-        $wob
+        #$wob
         makeCharts -maxItems $maxItems
 
         # Start building html presentation page
 
-        [string]$table = $wob | ConvertTo-Html           
-        $table = $table -replace ".*.head>", ""
+        $header = Get-Content  C:\Users\admin\Desktop\WeatherCharts\header.html
+        $table = $wob | ConvertTo-Html           
+        $table = $table -replace ".*.<body>", ""
         $table =  $table -replace "</body></html>",""
-           
-        # $table | Out-File -FilePath C:\Users\admin\Desktop\table.txt
+        $end = "</body></html>"
+        $temperatureImageFile = "file:///C:\Users\admin\Desktop\WeatherCharts\$($today)\Temp_$($today)_$($hours)hours.png"
+        $capeImageFile = "file:///C:\Users\admin\Desktop\WeatherCharts\$($today)\CAPE_$($today)_$($hours)hours.png"
+        $images = "<body><img src=`""+$temperatureImageFile+"`" width=`"1600`" height=`"900`"><img src=`""+$capeImageFile+"`" width=`"1600`" height=`"900`">"
+
+
+        $htmlFile = $header+$images+$table+$end
         
+        
+        $htmlFile | Out-File -FilePath C:\Users\admin\Desktop\WeatherCharts\$today\weather-table-Charts-$today.html
+        Invoke-Item C:\Users\admin\Desktop\WeatherCharts\$today\weather-table-Charts-$today.html
 }
 
 gw 48
