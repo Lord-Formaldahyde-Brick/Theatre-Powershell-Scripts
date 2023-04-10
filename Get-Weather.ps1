@@ -25,20 +25,35 @@ function Get-Weather  {
         $chart1 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $chart1.Width = 1600
         $chart1.Height = 900
+        $chart2 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
+        $chart2.Width = 1600
+        $chart2.Height = 900
 
         # create chart area
         $chart1Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
         $chart1.ChartAreas.Add($chart1Area)
+        $chart2Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
+        $chart2.ChartAreas.Add($chart2Area)
     
         $chart1Title = New-Object System.Windows.Forms.DataVisualization.Charting.Title
         $chart1Title.Text = "Temperature - $($hours) Hours"
+        $chart2Title = New-Object System.Windows.Forms.DataVisualization.Charting.Title
+        $chart2Title.Text = "CAPE - $($hours) Hours"
 
         $titleFont = New-Object System.Drawing.Font @('Microsoft Sans Serif', '18',[System.Drawing.FontStyle]::Bold)
-        $chart1Title.Font = $titleFont
+        
+        
         $chart1.Titles.Add($chart1Title)
+        $chart1Title.Font = $titleFont
         $chart1Area.AxisX.Title = "Time"
-        $chart1Area.AxisY.Title = "Temperature"
+        $chart1Area.AxisY.Title = "Temperature Celsius"
         $chart1Area.BackColor ="SkyBlue"
+        
+        $chart2.Titles.Add($chart2Title)
+        $chart2Title.Font = $titleFont
+        $chart2Area.AxisX.Title = "Time"
+        $chart2Area.AxisY.Title = "CAPE J/Kg"
+        $chart2Area.BackColor ="SkyBlue"
 
 
         $chartTemperature = @()
@@ -88,6 +103,14 @@ function Get-Weather  {
         $series5.IsValueShownAsLabel = $True
         $series5.BorderWidth = 3
 
+        $series6 = $chart2.Series.Add("CAPE")
+        $series6.ChartType = "Spline"
+        $series6.Color = "Orange"
+        $series6.IsValueShownAsLabel = $True
+        $series6.BorderWidth = 3
+
+
+
         $leg1 = $chart1.Legends.Add("TemperatureKeys")
         $leg1.BackColor ="skyblue"
         $leg1.BorderColor = "black"
@@ -104,8 +127,11 @@ function Get-Weather  {
         $series3.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp850hPa)
         $series4.Points.DataBindXY($chartTemperature.Time,$chartTemperature.dp2m)
         $series5.Points.DataBindXY($chartTemperature.Time,$chartTemperature.dp850hPa)
+        $series6.Points.DataBindXY($chartTemperature.Time,$chartTemperature.cp)
         $temp2mImageFile = "C:\Users\admin\Desktop\WeatherCharts\$($today)\Temp_$($today)_$($hours)hours.png"
         $chart1.SaveImage($temp2mImageFile,'PNG')
+        $capeImageFile = "C:\Users\admin\Desktop\WeatherCharts\$($today)\CAPE_$($today)_$($hours)hours.png"
+        $chart2.SaveImage($capeImageFile,'PNG')
         
     }
     
