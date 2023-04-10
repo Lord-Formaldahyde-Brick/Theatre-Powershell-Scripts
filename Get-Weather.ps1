@@ -166,7 +166,7 @@ function Get-Weather  {
         Thunderstorm_with_slight_hail
         Thunderstorm_with_heavy_hail = 99
     }
-    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&elevation=50&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,pressure_msl,cloudcover,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windspeed_180m,winddirection_10m,winddirection_180m,temperature_180m,cape,temperature_850hPa,dewpoint_850hPa&models=best_match"
+    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&elevation=50&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,pressure_msl,cloudcover,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windspeed_850hPa,winddirection_10m,winddirection_850hPa,temperature_180m,cape,temperature_850hPa,dewpoint_850hPa&models=best_match"
     $weather = $wj | ConvertFrom-Json
     if ($hours) {
         if ($hours -ge 1 -and $hours -le 168) {
@@ -188,12 +188,12 @@ function Get-Weather  {
         $Syn = $Syn.Replace("_", " ")
         $windspeedConvToMile10m = ($weather.hourly.windspeed_10m[$k]) * 0.621371
         $windspeedConvToMile10m = [math]::round($windspeedConvToMile10m,2)
-        $windspeedConvToMile180m = ($weather.hourly.windspeed_180m[$k]) * 0.621371
-        $windspeedConvToMile180m = [math]::round($windspeedConvToMile180m,2)
+        $windspeedConvToMile850 = ($weather.hourly.windspeed_850hPa[$k]) * 0.621371
+        $windspeedConvToMile850 = [math]::round($windspeedConvToMile850,2)
         $windspeedConvToKnot10m = ($weather.hourly.windspeed_10m[$k]) * 0.539957
         $windspeedConvToKnot10m = [math]::round($windspeedConvToKnot10m,2)
-        $windspeedConvToKnot180m = ($weather.hourly.windspeed_180m[$k]) * 0.539957
-        $windspeedConvToKnot180m = [math]::round($windspeedConvToKnot180m,2)
+        $windspeedConvToKnot850 = ($weather.hourly.windspeed_850hPa[$k]) * 0.539957
+        $windspeedConvToKnot850 = [math]::round($windspeedConvToKnot850,2)
 
         $obj = New-Object psobject -Property @{
             "Day" = $dt.DayOfWeek
@@ -207,8 +207,8 @@ function Get-Weather  {
             "CAPE" = "$($weather.hourly.cape[$k])" + " J/Kg"
             "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + " Km/h" + " " + $windspeedConvToMile10m + " Mph" + " " + $windspeedConvToKnot10m + " kts"
             "Wind-Dir-10m" = "$($weather.hourly.winddirection_10m[$k])" + [char]0x00b0
-            "Wind-Speed-180m" = "$($weather.hourly.windspeed_180m[$k])" + " Km/h" + " " + $windspeedConvToMile180m + " Mph" + " " + $windspeedConvToKnot180m + " kts"
-            "Wind-Dir-180m" = "$($weather.hourly.winddirection_180m[$k])" + [char]0x00b0
+            "Wind-Speed-850hPa" = "$($weather.hourly.windspeed_850hPa[$k])" + " Km/h" + " " + $windspeedConvToMile850 + " Mph" + " " + $windspeedConvToKnot850 + " kts"
+            "Wind-Dir-850hPa" = "$($weather.hourly.winddirection_850hPa[$k])" + [char]0x00b0
             "Pressure-MSL" ="$($weather.hourly.pressure_msl[$k])" + " hPa"
             "Surface-Pressure" ="$($weather.hourly.surface_pressure[$k])" + " hPa"
             "Precipitation" = "$($weather.hourly.precipitation[$k])" + " mm"
@@ -219,7 +219,7 @@ function Get-Weather  {
             "Synopsis" = $Syn       
         }
         
-        $wob += $obj | Select-Object Date,Time,Temperature-2m,Dewpoint-2m,Temperature-180m,Temperature-850hPa,Dewpoint-850hPa,CAPE,Wind-Speed-10m,Wind-Dir-10m,Wind-Speed-180m,Wind-Dir-180m,Pressure-MSL,Surface-Pressure,Precipitation,Cloud-Cover-Below-3Km,Cloud-Cover-3Km-to-8Km,Cloud-Cover-Above-8Km,Synopsis
+        $wob += $obj | Select-Object Date,Time,Temperature-2m,Dewpoint-2m,Temperature-180m,Temperature-850hPa,Dewpoint-850hPa,CAPE,Wind-Speed-10m,Wind-Speed-850hPa,Wind-Dir-10m,Wind-Dir-850hPa,Pressure-MSL,Surface-Pressure,Precipitation,Cloud-Cover-Below-3Km,Cloud-Cover-3Km-to-8Km,Cloud-Cover-Above-8Km,Synopsis
         
     }
 
