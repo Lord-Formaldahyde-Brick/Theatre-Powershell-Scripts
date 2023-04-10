@@ -12,14 +12,12 @@ function Get-Weather  {
     
     function makeCharts  {
        param (
-        # Parameter help description
+        
         [Parameter(Mandatory = $True)]
         $maxItems
        )
-        #Add-Type -AssemblyName System.Windows.Forms
-        Add-Type -AssemblyName System.Windows.Forms.DataVisualization
 
-           
+        Add-Type -AssemblyName System.Windows.Forms.DataVisualization
 
         #Create chart
         $chart1 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
@@ -42,7 +40,6 @@ function Get-Weather  {
 
         $titleFont = New-Object System.Drawing.Font @('Microsoft Sans Serif', '18',[System.Drawing.FontStyle]::Bold)
         
-        
         $chart1.Titles.Add($chart1Title)
         $chart1Title.Font = $titleFont
         $chart1Area.AxisX.Title = "Time"
@@ -55,11 +52,10 @@ function Get-Weather  {
         $chart2Area.AxisY.Title = "CAPE J/Kg"
         $chart2Area.BackColor ="SkyBlue"
 
-
-        $chartTemperature = @()
+        $weatheChartingObjects = @()
         for ($k=0; $k -lt $maxItems; $k++){
             [string]$tm = $weather.hourly.time[$k]#.split("T")[1]
-            $chartOb = @{
+            $chartingItems = @{
                 "time" =  $tm
                 "temp2m" = [double]"$($weather.hourly.temperature_2m[$k])"
                 "temp180m" = [double]"$($weather.hourly.temperature_180m[$k])"
@@ -70,7 +66,7 @@ function Get-Weather  {
 
             }
     
-            $chartTemperature += $chartOb | Select-Object time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp
+            $weatheChartingObjects += $chartingItems | Select-Object time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp
         }
         
         $series1 = $chart1.Series.Add("Temperature2m")
@@ -122,12 +118,12 @@ function Get-Weather  {
         New-Item -Path C:\Users\admin\Desktop\WeatherCharts\$today -ItemType Directory
         }
 
-        $series1.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp2m)
-        $series2.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp180m)
-        $series3.Points.DataBindXY($chartTemperature.Time,$chartTemperature.temp850hPa)
-        $series4.Points.DataBindXY($chartTemperature.Time,$chartTemperature.dp2m)
-        $series5.Points.DataBindXY($chartTemperature.Time,$chartTemperature.dp850hPa)
-        $series6.Points.DataBindXY($chartTemperature.Time,$chartTemperature.cp)
+        $series1.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.temp2m)
+        $series2.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.temp180m)
+        $series3.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.temp850hPa)
+        $series4.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.dp2m)
+        $series5.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.dp850hPa)
+        $series6.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.cp)
         $temp2mImageFile = "C:\Users\admin\Desktop\WeatherCharts\$($today)\Temp_$($today)_$($hours)hours.png"
         $chart1.SaveImage($temp2mImageFile,'PNG')
         $capeImageFile = "C:\Users\admin\Desktop\WeatherCharts\$($today)\CAPE_$($today)_$($hours)hours.png"
@@ -225,7 +221,15 @@ function Get-Weather  {
 
         $wob
         makeCharts -maxItems $maxItems
+
+        # Start building html presentation page
+
+        [string]$table = $wob | ConvertTo-Html           
+        $table = $table -replace ".*.head>", ""
+        $table =  $table -replace "</body></html>",""
+           
+        # $table | Out-File -FilePath C:\Users\admin\Desktop\table.txt
         
 }
 
-gw 24
+gw 48
