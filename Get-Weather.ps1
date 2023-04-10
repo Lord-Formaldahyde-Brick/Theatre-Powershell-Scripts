@@ -222,15 +222,19 @@ function Get-Weather  {
         makeCharts -maxItems $maxItems
 
         # Start building html presentation page
+        $header = Get-Content  C:\Users\admin\Desktop\WeatherCharts\header.html # simple html5 header with css - change path to taste
+        $table = $wob | ConvertTo-Html 
+        $table = $table -replace "<!DOC.*", "" 
+        $table = $table -replace "<html.*", ""  
+        $table = $table -replace "<title.*", ""      
+        $table = $table -replace ".*head>", ""
+        $table = $table -replace "<body>", ""
 
-        $header = Get-Content  C:\Users\admin\Desktop\WeatherCharts\header.html
-        $table = $wob | ConvertTo-Html           
-        $table = $table -replace ".*.<body>", ""
         $table =  $table -replace "</body></html>",""
         $end = "</body></html>"
         $temperatureImageFile = "file:///C:\Users\admin\Desktop\WeatherCharts\$($today)\Temp_$($today)_$($hours)hours.png"
         $capeImageFile = "file:///C:\Users\admin\Desktop\WeatherCharts\$($today)\CAPE_$($today)_$($hours)hours.png"
-        $images = "<body><img src=`""+$temperatureImageFile+"`" width=`"1600`" height=`"900`"><img src=`""+$capeImageFile+"`" width=`"1600`" height=`"900`">"
+        $images = "<body>`n<img src=`""+$temperatureImageFile+"`" width=`"1600`" height=`"900`">`n<img src=`""+$capeImageFile+"`" width=`"1600`" height=`"900`">`n"
 
 
         $htmlFile = $header+$images+$table+$end
@@ -240,4 +244,4 @@ function Get-Weather  {
         Invoke-Item C:\Users\admin\Desktop\WeatherCharts\$today\weather-table-Charts-$today.html
 }
 
-gw 48
+gw 24
