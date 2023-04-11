@@ -27,17 +27,24 @@ function Get-Weather  {
         $chart2 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $chart2.Width = 1600
         $chart2.Height = 900
+        $chart3 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
+        $chart3.Width = 1600
+        $chart3.Height = 900
 
         # create chart area
         $chart1Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
         $chart1.ChartAreas.Add($chart1Area)
         $chart2Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
         $chart2.ChartAreas.Add($chart2Area)
+        $chart3Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
+        $chart3.ChartAreas.Add($chart3Area)
     
         $chart1Title = New-Object System.Windows.Forms.DataVisualization.Charting.Title
         $chart1Title.Text = "Temperature - $($hours) Hours"
         $chart2Title = New-Object System.Windows.Forms.DataVisualization.Charting.Title
         $chart2Title.Text = "CAPE - $($hours) Hours"
+        $chart3Title = New-Object System.Windows.Forms.DataVisualization.Charting.Title
+        $chart3Title.Text = "Wind Speed - $($hours) Hours"
 
         $titleFont = New-Object System.Drawing.Font @('Microsoft Sans Serif', '18',[System.Drawing.FontStyle]::Bold)
         
@@ -53,6 +60,13 @@ function Get-Weather  {
         $chart2Area.AxisY.Title = "CAPE J/Kg"
         $chart2Area.BackColor ="SkyBlue"
 
+        $chart3.Titles.Add($chart3Title)
+        $chart3Title.Font = $titleFont
+        $chart3Area.AxisX.Title = "Time"
+        $chart3Area.AxisY.Title = "Wind Speed Km/h"
+        $chart3Area.BackColor ="SkyBlue"
+
+
         $weatheChartingObjects = @()
         for ($k=0; $k -lt $maxItems; $k++){
             [string]$tm = $weather.hourly.time[$k]#.split("T")[1]
@@ -64,17 +78,20 @@ function Get-Weather  {
                 "dp2m" = [double]"$($weather.hourly.dewpoint_2m[$k])"
                 "dp850hPa" = [double]"$($weather.hourly.dewpoint_850hPa[$k])"
                 "cp" = [double]"$($weather.hourly.cape[$k])"
-
+                "windsp_10m" = [double]"$($weather.hourly.windspeed_10m[$k])"
+                "windsp_850" = [double]"$($weather.hourly.windspeed_850hPa[$k])"
             }
     
-            $weatheChartingObjects += $chartingItems | Select-Object time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp
+            $weatheChartingObjects += $chartingItems | Select-Object time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp,windsp_10m,windsp_850
         }
         $series1 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
         $series2 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
         $series3 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
         $series4 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
         $series5 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
-        $series6 = New-Object System.Windows.Forms.DataVisualization.Charting.Series     
+        $series6 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
+        $series7 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
+        $series8 = New-Object System.Windows.Forms.DataVisualization.Charting.Series     
        
         $series1 = $chart1.Series.Add("Temp2m")
         $series1.ChartType = "Spline"
@@ -112,8 +129,21 @@ function Get-Weather  {
         $series6.IsValueShownAsLabel = $True
         $series6.BorderWidth = 3
 
+        $series7 = $chart3.Series.Add("Windsp_10m")
+        $series7.ChartType = "Spline"
+        $series7.Color = "Pink"
+        $series7.IsValueShownAsLabel = $True
+        $series7.BorderWidth = 3
+
+        $series8 = $chart3.Series.Add("Windsp_850")
+        $series8.ChartType = "Spline"
+        $series8.Color = "White"
+        $series8.IsValueShownAsLabel = $True
+        $series8.BorderWidth = 3
+
         $leg1 = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
         $leg2 = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
+        $leg3 = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
 
         $leg1 = $chart1.Legends.Add("TemperatureKeys")
         $leg1.BackColor ="skyblue"
@@ -123,8 +153,12 @@ function Get-Weather  {
         $leg2.BackColor ="skyblue"
         $leg2.BorderColor = "black" 
 
+        $leg3 = $chart3.Legends.Add("WindSpKeys")
+        $leg3.BackColor ="skyblue"
+        $leg3.BorderColor = "black" 
+
         if (-not (Test-Path -path $topWeatherFolder\$today)) {
-        New-Item -Path $topWeatherFolder\$today -ItemType Directory
+            New-Item -Path $topWeatherFolder\$today -ItemType Directory
         }
 
         $series1.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.temp2m)
@@ -133,10 +167,15 @@ function Get-Weather  {
         $series4.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.dp2m)
         $series5.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.dp850hPa)
         $series6.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.cp)
+        $series7.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.windsp_10m)
+        $series8.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.windsp_850)
+
         $temperatureChartImage = "$($topWeatherFolder)\$($today)\Temp_$($today)_$($hours)hours.png"
         $chart1.SaveImage($temperatureChartImage,'PNG')
         $capeImageFile = "$($topWeatherFolder)\$($today)\CAPE_$($today)_$($hours)hours.png"
         $chart2.SaveImage($capeImageFile,'PNG')
+        $windspImageFile = "$($topWeatherFolder)\$($today)\WindSpeed_$($today)_$($hours)hours.png"
+        $chart3.SaveImage($windspImageFile,'PNG')
         
     }
     
@@ -228,22 +267,23 @@ function Get-Weather  {
         
     }
 
-        #$wob
-        makeCharts -maxItems $maxItems
+    
+    makeCharts -maxItems $maxItems
 
-        # Start building html presentation page
-        $header = Get-Content  $topWeatherFolder\header.html # simple html5 header with css - change path to taste
+    # Start building html presentation page
+    $header = Get-Content  $topWeatherFolder\header.html # simple html5 header with css - change path to taste
         
-        $temperatureImageFile = "file:///$($topWeatherFolder)\$($today)\Temp_$($today)_$($hours)hours.png"
-        $capeImageFile = "file:///$($topWeatherFolder)\$($today)\CAPE_$($today)_$($hours)hours.png"
-        $images = "<body>`n<img src=`""+$temperatureImageFile+"`" width=`"1600`" height=`"900`">`n<img src=`""+$capeImageFile+"`" width=`"1600`" height=`"900`">`n"
-        $table = $wob | ConvertTo-Html 
-        $table = $table[5..($table.Length -1)]
+    $temperatureImageFile = "file:///$($topWeatherFolder)\$($today)\Temp_$($today)_$($hours)hours.png"
+    $capeImageFile = "file:///$($topWeatherFolder)\$($today)\CAPE_$($today)_$($hours)hours.png"
+    $windspImageFile = "file:///$($topWeatherFolder)\$($today)\WindSpeed_$($today)_$($hours)hours.png"
+    $images = "<body>`n<img src=`""+$temperatureImageFile+"`" width=`"1600`" height=`"900`">`n<img src=`""+$capeImageFile+"`" width=`"1600`" height=`"900`">`n<img src=`""+$windspImageFile+"`" width=`"1600`" height=`"900`">`n"
+    $table = $wob | ConvertTo-Html 
+    $table = $table[5..($table.Length -1)]
 
-        $htmlFile = $header+$images+$table+$end
+    $htmlFile = $header+$images+$table+$end
         
-        $htmlFile | Out-File -FilePath $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
-        Invoke-Item $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
+    $htmlFile | Out-File -FilePath $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
+    Invoke-Item $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
 }
 
 gw 48
