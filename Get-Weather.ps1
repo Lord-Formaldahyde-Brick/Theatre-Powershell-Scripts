@@ -6,6 +6,7 @@ function Get-Weather  {
         [int]$hours
     )
 
+    $topWeatherFolder = "C:\Users\admin\Desktop\WeatherCharts"
     [string]$today = Get-Date
     $today = $today.substring(0,10)
     $today = "Weather_$($today.replace("/", "-"))"
@@ -68,7 +69,13 @@ function Get-Weather  {
     
             $weatheChartingObjects += $chartingItems | Select-Object time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp
         }
-        
+        $series1 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
+        $series2 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
+        $series3 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
+        $series4 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
+        $series5 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
+        $series6 = New-Object System.Windows.Forms.DataVisualization.Charting.Series     
+       
         $series1 = $chart1.Series.Add("Temp2m")
         $series1.ChartType = "Spline"
         $series1.Color = "Red"
@@ -105,6 +112,9 @@ function Get-Weather  {
         $series6.IsValueShownAsLabel = $True
         $series6.BorderWidth = 3
 
+        $leg1 = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
+        $leg2 = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
+
         $leg1 = $chart1.Legends.Add("TemperatureKeys")
         $leg1.BackColor ="skyblue"
         $leg1.BorderColor = "black"     
@@ -113,8 +123,8 @@ function Get-Weather  {
         $leg2.BackColor ="skyblue"
         $leg2.BorderColor = "black" 
 
-        if (-not (Test-Path -path C:\Users\admin\Desktop\WeatherCharts\$today)) {
-        New-Item -Path C:\Users\admin\Desktop\WeatherCharts\$today -ItemType Directory
+        if (-not (Test-Path -path $topWeatherFolder\$today)) {
+        New-Item -Path $topWeatherFolder\$today -ItemType Directory
         }
 
         $series1.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.temp2m)
@@ -123,9 +133,9 @@ function Get-Weather  {
         $series4.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.dp2m)
         $series5.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.dp850hPa)
         $series6.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.cp)
-        $temp2mImageFile = "C:\Users\admin\Desktop\WeatherCharts\$($today)\Temp_$($today)_$($hours)hours.png"
-        $chart1.SaveImage($temp2mImageFile,'PNG')
-        $capeImageFile = "C:\Users\admin\Desktop\WeatherCharts\$($today)\CAPE_$($today)_$($hours)hours.png"
+        $temperatureChartImage = "$($topWeatherFolder)\$($today)\Temp_$($today)_$($hours)hours.png"
+        $chart1.SaveImage($temperatureChartImage,'PNG')
+        $capeImageFile = "$($topWeatherFolder)\$($today)\CAPE_$($today)_$($hours)hours.png"
         $chart2.SaveImage($capeImageFile,'PNG')
         
     }
@@ -137,10 +147,10 @@ function Get-Weather  {
         Partly_cloudy
         Overcast
         Fog = 45
-        Depositing_rime_fog
+        Depositing_rime_fog = 48
         Light_drizzle = 51
-        Moderate_drizzle
-        Dense_drizzle
+        Moderate_drizzle = 53
+        Dense_drizzle = 55
         Light_freezing_drizzle = 56
         Dense_freezing_drizzle
         Slight_rain = 61
@@ -222,26 +232,18 @@ function Get-Weather  {
         makeCharts -maxItems $maxItems
 
         # Start building html presentation page
-        $header = Get-Content  C:\Users\admin\Desktop\WeatherCharts\header.html # simple html5 header with css - change path to taste
-        $table = $wob | ConvertTo-Html 
-        $table = $table -replace "<!DOC.*", "" 
-        $table = $table -replace "<html.*", ""  
-        $table = $table -replace "<title.*", ""      
-        $table = $table -replace ".*head>", ""
-        $table = $table -replace "<body>", ""
-
-        $table =  $table -replace "</body></html>",""
-        $end = "</body></html>"
-        $temperatureImageFile = "file:///C:\Users\admin\Desktop\WeatherCharts\$($today)\Temp_$($today)_$($hours)hours.png"
-        $capeImageFile = "file:///C:\Users\admin\Desktop\WeatherCharts\$($today)\CAPE_$($today)_$($hours)hours.png"
+        $header = Get-Content  $topWeatherFolder\header.html # simple html5 header with css - change path to taste
+        
+        $temperatureImageFile = "file:///$($topWeatherFolder)\$($today)\Temp_$($today)_$($hours)hours.png"
+        $capeImageFile = "file:///$($topWeatherFolder)\$($today)\CAPE_$($today)_$($hours)hours.png"
         $images = "<body>`n<img src=`""+$temperatureImageFile+"`" width=`"1600`" height=`"900`">`n<img src=`""+$capeImageFile+"`" width=`"1600`" height=`"900`">`n"
-
+        $table = $wob | ConvertTo-Html 
+        $table = $table[5..($table.Length -1)]
 
         $htmlFile = $header+$images+$table+$end
         
-        
-        $htmlFile | Out-File -FilePath C:\Users\admin\Desktop\WeatherCharts\$today\weather-table-Charts-$today.html
-        Invoke-Item C:\Users\admin\Desktop\WeatherCharts\$today\weather-table-Charts-$today.html
+        $htmlFile | Out-File -FilePath $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
+        Invoke-Item $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
 }
 
-gw 24
+gw 48
