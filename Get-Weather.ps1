@@ -6,7 +6,7 @@ function Get-Weather  {
         [int]$hours
     )
 
-    $topWeatherFolder = "C:\Users\admin\Desktop\WeatherCharts"
+    $topWeatherFolder = "D:\WeatherCharts"
     [string]$today = Get-Date
     $today = $today.substring(0,10)
     $today = "Weather_$($today.replace("/", "-"))"
@@ -80,9 +80,10 @@ function Get-Weather  {
                 "cp" = [double]"$($weather.hourly.cape[$k])"
                 "windsp_10m" = [double]"$($weather.hourly.windspeed_10m[$k])"
                 "windsp_850" = [double]"$($weather.hourly.windspeed_850hPa[$k])"
+                "windgust10" =[double]"$($weather.hourly.windgusts_10m[$k])"
             }
     
-            $weatheChartingObjects += $chartingItems | Select-Object time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp,windsp_10m,windsp_850
+            $weatheChartingObjects += $chartingItems | Select-Object time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp,windsp_10m,windsp_850,windgust10
         }
         $series1 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
         $series2 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
@@ -91,7 +92,8 @@ function Get-Weather  {
         $series5 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
         $series6 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
         $series7 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
-        $series8 = New-Object System.Windows.Forms.DataVisualization.Charting.Series     
+        $series8 = New-Object System.Windows.Forms.DataVisualization.Charting.Series  
+        $series9 = New-Object System.Windows.Forms.DataVisualization.Charting.Series   
        
         $series1 = $chart1.Series.Add("Temp2m")
         $series1.ChartType = "Spline"
@@ -141,6 +143,12 @@ function Get-Weather  {
         $series8.IsValueShownAsLabel = $True
         $series8.BorderWidth = 3
 
+        $series9 = $chart3.Series.Add("WindGust10")
+        $series9.ChartType = "Spline"
+        $series9.Color = "Red"
+        $series9.IsValueShownAsLabel = $True
+        $series9.BorderWidth = 3
+
         $leg1 = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
         $leg2 = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
         $leg3 = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
@@ -169,6 +177,7 @@ function Get-Weather  {
         $series6.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.cp)
         $series7.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.windsp_10m)
         $series8.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.windsp_850)
+        $series9.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.windgust10)
 
         $temperatureChartImage = "$($topWeatherFolder)\$($today)\Temp_$($today)_$($hours)hours.png"
         $chart1.SaveImage($temperatureChartImage,'PNG')
@@ -210,7 +219,7 @@ function Get-Weather  {
         Thunderstorm_with_slight_hail
         Thunderstorm_with_heavy_hail = 99
     }
-    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&elevation=50&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,pressure_msl,cloudcover,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windspeed_850hPa,winddirection_10m,winddirection_850hPa,temperature_180m,cape,temperature_850hPa,dewpoint_850hPa&models=best_match"
+    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&elevation=50&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,pressure_msl,cloudcover,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windspeed_850hPa,winddirection_10m,winddirection_850hPa,temperature_180m,cape,temperature_850hPa,dewpoint_850hPa,windgusts_10m&models=best_match"
     $weather = $wj | ConvertFrom-Json
     if ($hours) {
         if ($hours -ge 1 -and $hours -le 168) {
@@ -250,6 +259,7 @@ function Get-Weather  {
             "Dewpoint-850hPa" ="$($weather.hourly.dewpoint_850hPa[$k])" + [char]0x00b0 + "C"
             "CAPE" = "$($weather.hourly.cape[$k])" + " J/Kg"
             "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + " Km/h" + " " + $windspeedConvToMile10m + " Mph" + " " + $windspeedConvToKnot10m + " kts"
+            #"Wind-Gusts-10m" = "$($weather.hourly.windgusts_10m[$k])" + " Km/h" + " " + $windspeedConvToMile10m + " Mph" + " " + $windspeedConvToKnot10m + " kts"
             "Wind-Dir-10m" = "$($weather.hourly.winddirection_10m[$k])" + [char]0x00b0
             "Wind-Speed-850hPa" = "$($weather.hourly.windspeed_850hPa[$k])" + " Km/h" + " " + $windspeedConvToMile850 + " Mph" + " " + $windspeedConvToKnot850 + " kts"
             "Wind-Dir-850hPa" = "$($weather.hourly.winddirection_850hPa[$k])" + [char]0x00b0
