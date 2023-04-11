@@ -1,3 +1,12 @@
+<# Requires folder to be created for all weather documents, from here the html presentaion pages and dateed folders
+will be automatically created. This base weather folder will also need to contain the header.html file 
+which is on github.
+
+This script requires (and works well on) Powershell 7.3, as it doesn't yet fully function on Powershell 5.1, 
+and I'm struggling to find the reason. (Everything displays but the data series in the charts) 
+May need a moment of clarity.
+#>
+
 function Get-Weather  {
     [CmdletBinding(PositionalBinding=$True)]
     [alias("gw")]
@@ -239,14 +248,6 @@ function Get-Weather  {
         [int]$wcode = $weather.hourly.weathercode[$k]
         [string]$Syn = [codes].GetEnumName($wcode)
         $Syn = $Syn.Replace("_", " ")
-        $windspeedConvToMile10m = ($weather.hourly.windspeed_10m[$k]) * 0.621371
-        $windspeedConvToMile10m = [math]::round($windspeedConvToMile10m,2)
-        $windspeedConvToMile850 = ($weather.hourly.windspeed_850hPa[$k]) * 0.621371
-        $windspeedConvToMile850 = [math]::round($windspeedConvToMile850,2)
-        $windspeedConvToKnot10m = ($weather.hourly.windspeed_10m[$k]) * 0.539957
-        $windspeedConvToKnot10m = [math]::round($windspeedConvToKnot10m,2)
-        $windspeedConvToKnot850 = ($weather.hourly.windspeed_850hPa[$k]) * 0.539957
-        $windspeedConvToKnot850 = [math]::round($windspeedConvToKnot850,2)
 
         $obj = New-Object psobject -Property @{
             "Day" = $dt.DayOfWeek
@@ -258,10 +259,10 @@ function Get-Weather  {
             "Dewpoint-2m" ="$($weather.hourly.dewpoint_2m[$k])" + [char]0x00b0 + "C"
             "Dewpoint-850hPa" ="$($weather.hourly.dewpoint_850hPa[$k])" + [char]0x00b0 + "C"
             "CAPE" = "$($weather.hourly.cape[$k])" + " J/Kg"
-            "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + " Km/h" + " " + $windspeedConvToMile10m + " Mph" + " " + $windspeedConvToKnot10m + " kts"
-            #"Wind-Gusts-10m" = "$($weather.hourly.windgusts_10m[$k])" + " Km/h" + " " + $windspeedConvToMile10m + " Mph" + " " + $windspeedConvToKnot10m + " kts"
+            "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + " Km/h" + " " + [math]::round(($weather.hourly.windspeed_10m[$k] * 0.621371),2) + " Mph" + " " + [math]::round(($weather.hourly.windspeed_10m[$k] * 0.539957),2) + " kts"
+            "Wind-Gusts-10m" = "$($weather.hourly.windgusts_10m[$k])" + " Km/h" + " " + [math]::round(($weather.hourly.windgusts_10m[$k] * 0.621371),2) + " Mph" + " " + [math]::round(($weather.hourly.windgusts_10m[$k] * 0.539957),2) + " kts"
             "Wind-Dir-10m" = "$($weather.hourly.winddirection_10m[$k])" + [char]0x00b0
-            "Wind-Speed-850hPa" = "$($weather.hourly.windspeed_850hPa[$k])" + " Km/h" + " " + $windspeedConvToMile850 + " Mph" + " " + $windspeedConvToKnot850 + " kts"
+            "Wind-Speed-850hPa" = "$($weather.hourly.windspeed_850hPa[$k])" + " Km/h" + " " + [math]::round(($weather.hourly.windspeed_850hPa[$k] * 0.621371),2) + " Mph" + " " + [math]::round(($weather.hourly.windspeed_850hPa[$k] * 0.539957),2) + " kts"
             "Wind-Dir-850hPa" = "$($weather.hourly.winddirection_850hPa[$k])" + [char]0x00b0
             "Pressure-MSL" ="$($weather.hourly.pressure_msl[$k])" + " hPa"
             "Surface-Pressure" ="$($weather.hourly.surface_pressure[$k])" + " hPa"
@@ -273,7 +274,7 @@ function Get-Weather  {
             "Synopsis" = $Syn       
         }
         
-        $wob += $obj | Select-Object Date,Time,Temperature-2m,Dewpoint-2m,Temperature-180m,Temperature-850hPa,Dewpoint-850hPa,CAPE,Wind-Speed-10m,Wind-Speed-850hPa,Wind-Dir-10m,Wind-Dir-850hPa,Pressure-MSL,Surface-Pressure,Precipitation,Cloud-Cover-Below-3Km,Cloud-Cover-3Km-to-8Km,Cloud-Cover-Above-8Km,Synopsis
+        $wob += $obj | Select-Object Date,Time,Temperature-2m,Dewpoint-2m,Temperature-180m,Temperature-850hPa,Dewpoint-850hPa,CAPE,Wind-Speed-10m,Wind-Gusts-10m,Wind-Speed-850hPa,Wind-Dir-10m,Wind-Dir-850hPa,Pressure-MSL,Surface-Pressure,Precipitation,Cloud-Cover-Below-3Km,Cloud-Cover-3Km-to-8Km,Cloud-Cover-Above-8Km,Synopsis
         
     }
 
@@ -296,4 +297,4 @@ function Get-Weather  {
     Invoke-Item $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
 }
 
-gw 48
+gw 24
