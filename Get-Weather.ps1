@@ -4,7 +4,15 @@ which is on github.
 
 This script requires (and works well on) Powershell 7.3, as it doesn't yet fully function on Powershell 5.1, 
 and I'm struggling to find the reason. (Everything displays but the data series in the charts) 
-May need a moment of clarity.
+May need a moment of clarity. 
+Update: It appears that I've built this the wrong way, PS5 seems to want the data as a Hash-table
+where the we have an object (like hourly) with a key property (like temperature_2m) and value array.  
+I have given it Array[].hash-table of keys and values, as in array[0].{temp2m:single value for that hour, temp180m:val etc.}
+I'm not happy with the build up of hard coding either (due to wanting to try out stuff and get feedback), 
+so I will be ripping this apart and re-coding all the charting function.
+Just need to hatch a cunning plan. I shouldn't be too gutted, the documentation of charting in .net is quite vague
+on first read. You have to crack a few eggs! 
+
 #>
 
 function Get-Weather  {
@@ -39,8 +47,6 @@ function Get-Weather  {
         $chart3 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $chart3.Width = 1600
         $chart3.Height = 900
-
-        #$chartTicks = New-Object System.Windows.Forms.DataVisualization.Charting.Grid
 
 
         # create chart area
@@ -84,7 +90,7 @@ function Get-Weather  {
 
         $weatheChartingObjects = @()
         for ($k=0; $k -lt $maxItems; $k++){
-            [string]$tm = $weather.hourly.time[$k]#.split("T")[1]
+           $tm = $weather.hourly.time[$k]#.split("T")[1]
             [string]$d =  $weather.hourly.time[$k].split("T")[0]
             $chartingItems = @{
                 "date" = $d
@@ -102,15 +108,6 @@ function Get-Weather  {
     
             $weatheChartingObjects += $chartingItems | Select-Object date,time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp,windsp_10m,windsp_850,windgust10
         }
-        $series1 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
-        $series2 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
-        $series3 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
-        $series4 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
-        $series5 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
-        $series6 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
-        $series7 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
-        $series8 = New-Object System.Windows.Forms.DataVisualization.Charting.Series  
-        $series9 = New-Object System.Windows.Forms.DataVisualization.Charting.Series   
        
         $series1 = $chart1.Series.Add("Temp2m")
         $series1.ChartType = "Spline"
@@ -189,7 +186,7 @@ function Get-Weather  {
             New-Item -Path $topWeatherFolder\$today -ItemType Directory
         }
 
-        $series1.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.temp2m)
+        $series1.Points.DataBindXY($weatheChartingObjects.time,$weatheChartingObjects.temp2m)
         $series2.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.temp180m)
         $series3.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.temp850hPa)
         $series4.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.dp2m)
