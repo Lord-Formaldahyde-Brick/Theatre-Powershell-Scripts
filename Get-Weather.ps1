@@ -40,6 +40,9 @@ function Get-Weather  {
         $chart3.Width = 1600
         $chart3.Height = 900
 
+        #$chartTicks = New-Object System.Windows.Forms.DataVisualization.Charting.Grid
+
+
         # create chart area
         $chart1Area = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
         $chart1.ChartAreas.Add($chart1Area)
@@ -60,18 +63,21 @@ function Get-Weather  {
         $chart1.Titles.Add($chart1Title)
         $chart1Title.Font = $titleFont
         $chart1Area.AxisX.Title = "Time"
+        $chart1Area.AxisX.Interval = 3
         $chart1Area.AxisY.Title = "Temperature Celsius"
         $chart1Area.BackColor ="SkyBlue"
         
         $chart2.Titles.Add($chart2Title)
         $chart2Title.Font = $titleFont
         $chart2Area.AxisX.Title = "Time"
+        $chart2Area.AxisX.Interval = 3
         $chart2Area.AxisY.Title = "CAPE J/Kg"
         $chart2Area.BackColor ="SkyBlue"
 
         $chart3.Titles.Add($chart3Title)
         $chart3Title.Font = $titleFont
         $chart3Area.AxisX.Title = "Time"
+        $chart3Area.AxisX.Interval = 3
         $chart3Area.AxisY.Title = "Wind Speed Km/h"
         $chart3Area.BackColor ="SkyBlue"
 
@@ -79,7 +85,9 @@ function Get-Weather  {
         $weatheChartingObjects = @()
         for ($k=0; $k -lt $maxItems; $k++){
             [string]$tm = $weather.hourly.time[$k]#.split("T")[1]
+            [string]$d =  $weather.hourly.time[$k].split("T")[0]
             $chartingItems = @{
+                "date" = $d
                 "time" =  $tm
                 "temp2m" = [double]"$($weather.hourly.temperature_2m[$k])"
                 "temp180m" = [double]"$($weather.hourly.temperature_180m[$k])"
@@ -92,7 +100,7 @@ function Get-Weather  {
                 "windgust10" =[double]"$($weather.hourly.windgusts_10m[$k])"
             }
     
-            $weatheChartingObjects += $chartingItems | Select-Object time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp,windsp_10m,windsp_850,windgust10
+            $weatheChartingObjects += $chartingItems | Select-Object date,time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp,windsp_10m,windsp_850,windgust10
         }
         $series1 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
         $series2 = New-Object System.Windows.Forms.DataVisualization.Charting.Series
@@ -164,15 +172,18 @@ function Get-Weather  {
 
         $leg1 = $chart1.Legends.Add("TemperatureKeys")
         $leg1.BackColor ="skyblue"
-        $leg1.BorderColor = "black"     
+        $leg1.BorderColor = "black" 
+        $leg1.Alignment = "Center"    
         
         $leg2 = $chart2.Legends.Add("CAPEKey")
         $leg2.BackColor ="skyblue"
         $leg2.BorderColor = "black" 
+        $leg2.Alignment = "Center"
 
         $leg3 = $chart3.Legends.Add("WindSpKeys")
         $leg3.BackColor ="skyblue"
         $leg3.BorderColor = "black" 
+        $leg3.Alignment = "Center"
 
         if (-not (Test-Path -path $topWeatherFolder\$today)) {
             New-Item -Path $topWeatherFolder\$today -ItemType Directory
@@ -187,6 +198,7 @@ function Get-Weather  {
         $series7.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.windsp_10m)
         $series8.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.windsp_850)
         $series9.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.windgust10)
+
 
         $temperatureChartImage = "$($topWeatherFolder)\$($today)\Temp_$($today)_$($hours)hours.png"
         $chart1.SaveImage($temperatureChartImage,'PNG')
@@ -296,5 +308,4 @@ function Get-Weather  {
     $htmlFile | Out-File -FilePath $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
     Invoke-Item $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
 }
-
-gw 24
+ gw 48
