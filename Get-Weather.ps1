@@ -237,8 +237,9 @@ function Get-Weather  {
         Thunderstorm_with_slight_hail
         Thunderstorm_with_heavy_hail = 99
     }
-    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&elevation=50&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,pressure_msl,cloudcover,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windspeed_850hPa,winddirection_10m,winddirection_850hPa,temperature_180m,cape,temperature_850hPa,dewpoint_850hPa,windgusts_10m&models=best_match"
+    $wj = curl "https://api.open-meteo.com/v1/forecast?latitude=51.69&longitude=-3.92&elevation=50&hourly=temperature_2m,dewpoint_2m,precipitation,weathercode,surface_pressure,pressure_msl,cloudcover,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windspeed_850hPa,winddirection_10m,winddirection_850hPa,temperature_180m,cape,temperature_850hPa,dewpoint_850hPa,temperature_700hPa,dewpoint_700hPa,temperature_500hPa,windgusts_10m&models=best_match"
     $weather = $wj | ConvertFrom-Json
+    $hourlyData = $weather.hourly
     if ($hours) {
         if ($hours -ge 1 -and $hours -le 168) {
             $maxItems = $hours
@@ -257,6 +258,13 @@ function Get-Weather  {
         [int]$wcode = $weather.hourly.weathercode[$k]
         [string]$Syn = [codes].GetEnumName($wcode)
         $Syn = $Syn.Replace("_", " ")
+        [double]$T850 = $hourlyData.temperature_850hPa[$k]
+        [double]$T500 = $hourlyData.temperature_500hPa[$k]
+        [double]$Td850 = $hourlyData.dewpoint_850hPa[$k]
+        [double]$T700 = $hourlyData.temperature_700hPa[$k]
+        [double]$Td700 = $hourlyData.dewpoint_700hPa[$k]
+        $kIndex = ($T850 - $T500) + $Td850 - ($T700 - $Td700)
+     
 
         $obj = New-Object psobject -Property @{
             "Day" = $dt.DayOfWeek
@@ -268,6 +276,7 @@ function Get-Weather  {
             "Dewpoint-2m" ="$($weather.hourly.dewpoint_2m[$k])" + [char]0x00b0 + "C"
             "Dewpoint-850hPa" ="$($weather.hourly.dewpoint_850hPa[$k])" + [char]0x00b0 + "C"
             "CAPE" = "$($weather.hourly.cape[$k])" + " J/Kg"
+            "K-Index" = [math]::round($kIndex , 2)
             "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + " Km/h" + " " + [math]::round(($weather.hourly.windspeed_10m[$k] * 0.621371),2) + " Mph" + " " + [math]::round(($weather.hourly.windspeed_10m[$k] * 0.539957),2) + " kts"
             "Wind-Gusts-10m" = "$($weather.hourly.windgusts_10m[$k])" + " Km/h" + " " + [math]::round(($weather.hourly.windgusts_10m[$k] * 0.621371),2) + " Mph" + " " + [math]::round(($weather.hourly.windgusts_10m[$k] * 0.539957),2) + " kts"
             "Wind-Dir-10m" = "$($weather.hourly.winddirection_10m[$k])" + [char]0x00b0
@@ -283,7 +292,7 @@ function Get-Weather  {
             "Synopsis" = $Syn       
         }
         
-        $wob += $obj | Select-Object Date,Time,Temperature-2m,Dewpoint-2m,Temperature-180m,Temperature-850hPa,Dewpoint-850hPa,CAPE,Wind-Speed-10m,Wind-Gusts-10m,Wind-Speed-850hPa,Wind-Dir-10m,Wind-Dir-850hPa,Pressure-MSL,Surface-Pressure,Precipitation,Cloud-Cover-Below-3Km,Cloud-Cover-3Km-to-8Km,Cloud-Cover-Above-8Km,Synopsis
+        $wob += $obj | Select-Object Date,Time,Temperature-2m,Dewpoint-2m,Temperature-180m,Temperature-850hPa,Dewpoint-850hPa,CAPE,K-Index,Wind-Speed-10m,Wind-Gusts-10m,Wind-Speed-850hPa,Wind-Dir-10m,Wind-Dir-850hPa,Pressure-MSL,Surface-Pressure,Precipitation,Cloud-Cover-Below-3Km,Cloud-Cover-3Km-to-8Km,Cloud-Cover-Above-8Km,Synopsis
         
     }
 
@@ -305,4 +314,4 @@ function Get-Weather  {
     $htmlFile | Out-File -FilePath $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
     Invoke-Item $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
 }
- gw 48
+ gw 24
