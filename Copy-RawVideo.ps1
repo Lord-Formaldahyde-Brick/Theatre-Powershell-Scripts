@@ -80,13 +80,13 @@ Function Copy-RawVideo () {
         $totalTransfer = 0
         foreach($file in $FilesArray){
             $j = $(exiftool -j -q $file) | ConvertFrom-Json
-            $fileSize = $j.FileSize.split(" ")
+            $fileSize = $j.FileSize.split(" ") # create an array of number and unit
             
             if ($fileSize[1] -eq "GB") {
-                $fileSize[0] * 1024
+                $fileSize[0] * 1024 # total file transfer size is in MB
             }
             
-            $fileSize = $fileSize[0]
+            $fileSize = $fileSize[0] # save the value to single int
             $totalTransfer = $totalTransfer + $fileSize
         }
 
@@ -132,9 +132,9 @@ Function Copy-RawVideo () {
                         Copy-Item $file $storagePath\$headFolder\$subFolderName
                     }
                     else {
-                        Set-Location $storagePath\$headFolder
+                        Set-Location $storagePath\$headFolder  # new folders can onlt be made from the direct parent folder
                         New-Item -name $subFolderName -ItemType Directory
-                        Copy-Item $file $storagePath\$headFolder\$subFolderName
+                        Copy-Item $file $storagePath\$headFolder\$subFolderName   # full destination path because of problems over network
                     }
                 }
                 else {
