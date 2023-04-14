@@ -81,11 +81,12 @@ Function Copy-RawVideo () {
         foreach($file in $FilesArray){
             $j = $(exiftool -j -q $file) | ConvertFrom-Json
             $fileSize = $j.FileSize.split(" ")
-            $fileSize = $fileSize[0]
+            
             if ($fileSize[1] -eq "GB") {
-                $fileSize * 1024
+                $fileSize[0] * 1024
             }
-
+            
+            $fileSize = $fileSize[0]
             $totalTransfer = $totalTransfer + $fileSize
         }
 
