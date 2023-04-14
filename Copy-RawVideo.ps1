@@ -96,10 +96,11 @@ Function Copy-RawVideo () {
         foreach($file in $FilesArray){
             $jn = $(exiftool -j -q $file) | ConvertFrom-Json
             $singleFileSize = $jn.FileSize.split(" ")
-            $singleFileSize = $singleFileSize[0]
+            
             if ($singleFileSize[1] -eq "GB") {
-                $singleFileSize * 1024
+                $singleFileSize[0] * 1024
             }
+            $singleFileSize = $singleFileSize[0]
             $runTot = $runTot + $singleFileSize
 
           # [DateTime]$shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
