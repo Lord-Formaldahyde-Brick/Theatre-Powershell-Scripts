@@ -132,7 +132,7 @@ Function Copy-RawVideo () {
                     else {
                         Set-Location $storagePath\$headFolder
                         New-Item -name $subFolderName -ItemType Directory
-                        Copy-Item $file $subFolderName
+                        Copy-Item $file $storagePath\$headFolder\$subFolderName
                     }
                 }
                 else {
@@ -140,10 +140,10 @@ Function Copy-RawVideo () {
                     New-Item -name $headFolder -ItemType Directory
                     Set-Location $storagePath\$headFolder
                     New-Item -name $subFolderName -ItemType Directory
-                    Copy-Item $file $subFolderName
+                    Copy-Item $file $storagePath\$headFolder\$subFolderName
                 }
            } 
            Write-Progress -Activity "Video Transfered" -Status "$([math]::round(($runTot/$totalTransfer) * 100,2))% of transfer completed" -Id 2  -PercentComplete $(($runTot/$totalTransfer) * 100)
         }
-        Set-Location ..
+        Set-Location $storagePath
     }
