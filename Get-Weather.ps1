@@ -90,20 +90,20 @@ function Get-Weather  {
 
         $weatheChartingObjects = @()
         for ($k=0; $k -lt $maxItems; $k++){
-           $tm = $weather.hourly.time[$k]#.split("T")[1]
-            [string]$d =  $weather.hourly.time[$k].split("T")[0]
+           $tm = $hourlyData.time[$k]#.split("T")[1]
+            [string]$d =  $hourlyData.time[$k].split("T")[0]
             $chartingItems = @{
                 "date" = $d
                 "time" =  $tm
-                "temp2m" = [double]"$($weather.hourly.temperature_2m[$k])"
-                "temp180m" = [double]"$($weather.hourly.temperature_180m[$k])"
-                "temp850hPa" =[double]"$($weather.hourly.temperature_850hPa[$k])"
-                "dp2m" = [double]"$($weather.hourly.dewpoint_2m[$k])"
-                "dp850hPa" = [double]"$($weather.hourly.dewpoint_850hPa[$k])"
-                "cp" = [double]"$($weather.hourly.cape[$k])"
-                "windsp_10m" = [double]"$($weather.hourly.windspeed_10m[$k])"
-                "windsp_850" = [double]"$($weather.hourly.windspeed_850hPa[$k])"
-                "windgust10" =[double]"$($weather.hourly.windgusts_10m[$k])"
+                "temp2m" = [double]"$($hourlyData.temperature_2m[$k])"
+                "temp180m" = [double]"$($hourlyData.temperature_180m[$k])"
+                "temp850hPa" =[double]"$($hourlyData.temperature_850hPa[$k])"
+                "dp2m" = [double]"$($hourlyData.dewpoint_2m[$k])"
+                "dp850hPa" = [double]"$($hourlyData.dewpoint_850hPa[$k])"
+                "cp" = [double]"$($hourlyData.cape[$k])"
+                "windsp_10m" = [double]"$($hourlyData.windspeed_10m[$k])"
+                "windsp_850" = [double]"$($hourlyData.windspeed_850hPa[$k])"
+                "windgust10" =[double]"$($hourlyData.windgusts_10m[$k])"
             }
     
             $weatheChartingObjects += $chartingItems | Select-Object date,time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp,windsp_10m,windsp_850,windgust10
@@ -245,17 +245,17 @@ function Get-Weather  {
             $maxItems = $hours
         }
         else {
-            $maxItems= $weather.hourly.time.length
+            $maxItems= $hourlyData.time.length
         }
     }
     else {
-        $maxItems= $weather.hourly.time.length
+        $maxItems= $hourlyData.time.length
     }
     $wob = @()
     
     for ($k=0; $k -lt $maxItems; $k++){
-        $dt = [DateTime]$weather.hourly.time[$k].split("T")[0];
-        [int]$wcode = $weather.hourly.weathercode[$k]
+        $dt = [DateTime]$hourlyData.time[$k].split("T")[0];
+        [int]$wcode = $hourlyData.weathercode[$k]
         [string]$Syn = [codes].GetEnumName($wcode)
         $Syn = $Syn.Replace("_", " ")
         [double]$T850 = $hourlyData.temperature_850hPa[$k]
@@ -270,27 +270,27 @@ function Get-Weather  {
         $obj = New-Object psobject -Property @{
             "Day" = $dt.DayOfWeek
             "Date" = $dt.ToLongDateString()
-            "Time" = $weather.hourly.time[$k].split("T")[1]
-            "Temperature-2m" = "$($weather.hourly.temperature_2m[$k])" + [char]0x00b0 + "C"
-            "Temperature-180m" = "$($weather.hourly.temperature_180m[$k])" + [char]0x00b0 + "C"
-            "Temperature-850hPa" ="$($weather.hourly.temperature_850hPa[$k])" + [char]0x00b0 + "C"
-            "Dewpoint-2m" ="$($weather.hourly.dewpoint_2m[$k])" + [char]0x00b0 + "C"
-            "Dewpoint-850hPa" ="$($weather.hourly.dewpoint_850hPa[$k])" + [char]0x00b0 + "C"
-            "CAPE" = "$($weather.hourly.cape[$k])" + " J/Kg"
+            "Time" = $hourlyData.time[$k].split("T")[1]
+            "Temperature-2m" = "$($hourlyData.temperature_2m[$k])" + [char]0x00b0 + "C"
+            "Temperature-180m" = "$($hourlyData.temperature_180m[$k])" + [char]0x00b0 + "C"
+            "Temperature-850hPa" ="$($hourlyData.temperature_850hPa[$k])" + [char]0x00b0 + "C"
+            "Dewpoint-2m" ="$($hourlyData.dewpoint_2m[$k])" + [char]0x00b0 + "C"
+            "Dewpoint-850hPa" ="$($hourlyData.dewpoint_850hPa[$k])" + [char]0x00b0 + "C"
+            "CAPE" = "$($hourlyData.cape[$k])" + " J/Kg"
             "K-Index" = [math]::round($kIndex , 2)
             "TT-Index" = [math]::round($TT , 2)
-            "Wind-Speed-10m" = "$($weather.hourly.windspeed_10m[$k])" + " Km/h" + " " + [math]::round(($weather.hourly.windspeed_10m[$k] * 0.621371),2) + " Mph" + " " + [math]::round(($weather.hourly.windspeed_10m[$k] * 0.539957),2) + " kts"
-            "Wind-Gusts-10m" = "$($weather.hourly.windgusts_10m[$k])" + " Km/h" + " " + [math]::round(($weather.hourly.windgusts_10m[$k] * 0.621371),2) + " Mph" + " " + [math]::round(($weather.hourly.windgusts_10m[$k] * 0.539957),2) + " kts"
-            "Wind-Dir-10m" = "$($weather.hourly.winddirection_10m[$k])" + [char]0x00b0
-            "Wind-Speed-850hPa" = "$($weather.hourly.windspeed_850hPa[$k])" + " Km/h" + " " + [math]::round(($weather.hourly.windspeed_850hPa[$k] * 0.621371),2) + " Mph" + " " + [math]::round(($weather.hourly.windspeed_850hPa[$k] * 0.539957),2) + " kts"
-            "Wind-Dir-850hPa" = "$($weather.hourly.winddirection_850hPa[$k])" + [char]0x00b0
-            "Pressure-MSL" ="$($weather.hourly.pressure_msl[$k])" + " hPa"
-            "Surface-Pressure" ="$($weather.hourly.surface_pressure[$k])" + " hPa"
-            "Precipitation" = "$($weather.hourly.precipitation[$k])" + " mm"
-            "Cloud-Cover" = "$($weather.hourly.cloudcover[$k])" + "%"
-            "Cloud-Cover-Below-3Km" = "$($weather.hourly.cloudcover_low[$k])" + "%"
-            "Cloud-Cover-3Km-to-8Km" = "$($weather.hourly.cloudcover_mid[$k])" + "%"
-            "Cloud-Cover-Above-8Km" = "$($weather.hourly.cloudcover_high[$k])" + "%"
+            "Wind-Speed-10m" = "$($hourlyData.windspeed_10m[$k])" + " Km/h" + " " + [math]::round(($hourlyData.windspeed_10m[$k] * 0.621371),2) + " Mph" + " " + [math]::round(($hourlyData.windspeed_10m[$k] * 0.539957),2) + " kts"
+            "Wind-Gusts-10m" = "$($hourlyData.windgusts_10m[$k])" + " Km/h" + " " + [math]::round(($hourlyData.windgusts_10m[$k] * 0.621371),2) + " Mph" + " " + [math]::round(($hourlyData.windgusts_10m[$k] * 0.539957),2) + " kts"
+            "Wind-Dir-10m" = "$($hourlyData.winddirection_10m[$k])" + [char]0x00b0
+            "Wind-Speed-850hPa" = "$($hourlyData.windspeed_850hPa[$k])" + " Km/h" + " " + [math]::round(($hourlyData.windspeed_850hPa[$k] * 0.621371),2) + " Mph" + " " + [math]::round(($hourlyData.windspeed_850hPa[$k] * 0.539957),2) + " kts"
+            "Wind-Dir-850hPa" = "$($hourlyData.winddirection_850hPa[$k])" + [char]0x00b0
+            "Pressure-MSL" ="$($hourlyData.pressure_msl[$k])" + " hPa"
+            "Surface-Pressure" ="$($hourlyData.surface_pressure[$k])" + " hPa"
+            "Precipitation" = "$($hourlyData.precipitation[$k])" + " mm"
+            "Cloud-Cover" = "$($hourlyData.cloudcover[$k])" + "%"
+            "Cloud-Cover-Below-3Km" = "$($hourlyData.cloudcover_low[$k])" + "%"
+            "Cloud-Cover-3Km-to-8Km" = "$($hourlyData.cloudcover_mid[$k])" + "%"
+            "Cloud-Cover-Above-8Km" = "$($hourlyData.cloudcover_high[$k])" + "%"
             "Synopsis" = $Syn       
         }
         
@@ -316,4 +316,3 @@ function Get-Weather  {
     $htmlFile | Out-File -FilePath $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
     Invoke-Item $topWeatherFolder\$today\weather-table-Charts_$today_$hours.html
 }
- gw 48
