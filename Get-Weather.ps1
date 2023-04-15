@@ -1,18 +1,7 @@
 <# Requires folder to be created for all weather documents, from here the html presentaion pages and dateed folders
 will be automatically created. This base weather folder will also need to contain the header.html file 
-which is on github.
-
-This script requires (and works well on) Powershell 7.3, as it doesn't yet fully function on Powershell 5.1, 
-and I'm struggling to find the reason. (Everything displays but the data series in the charts) 
-May need a moment of clarity. 
-Update: It appears that I've built this the wrong way, PS5 seems to want the data as a Hash-table
-where the we have an object (like hourly) with a key property (like temperature_2m) and value array.  
-I have given it Array[].hash-table of keys and values, as in array[0].{temp2m:single value for that hour, temp180m:val etc.}
-I'm not happy with the build up of hard coding either (due to wanting to try out stuff and get feedback), 
-so I will be ripping this apart and re-coding all the charting function.
-Just need to hatch a cunning plan. I shouldn't be too gutted, the documentation of charting in .net is quite vague
-on first read. You have to crack a few eggs! 
-
+which is on github.  
+Update: Now works on Powershell 5.1  - A lot was learned correcting for this.
 #>
 
 function Get-Weather  {
@@ -29,12 +18,8 @@ function Get-Weather  {
     $today = "Weather_$($today.replace("/", "-"))"
     
     function makeCharts  {
-       param (
-        
-        [Parameter(Mandatory = $True)]
-        $maxItems
-       )
 
+        $hrs = $hours - 1
         Add-Type -AssemblyName System.Windows.Forms.DataVisualization
 
         #Create chart
@@ -87,28 +72,6 @@ function Get-Weather  {
         $chart3Area.AxisY.Title = "Wind Speed Km/h"
         $chart3Area.BackColor ="SkyBlue"
 
-
-        $weatheChartingObjects = @()
-        for ($k=0; $k -lt $maxItems; $k++){
-           $tm = $hourlyData.time[$k]#.split("T")[1]
-            [string]$d =  $hourlyData.time[$k].split("T")[0]
-            $chartingItems = @{
-                "date" = $d
-                "time" =  $tm
-                "temp2m" = [double]"$($hourlyData.temperature_2m[$k])"
-                "temp180m" = [double]"$($hourlyData.temperature_180m[$k])"
-                "temp850hPa" =[double]"$($hourlyData.temperature_850hPa[$k])"
-                "dp2m" = [double]"$($hourlyData.dewpoint_2m[$k])"
-                "dp850hPa" = [double]"$($hourlyData.dewpoint_850hPa[$k])"
-                "cp" = [double]"$($hourlyData.cape[$k])"
-                "windsp_10m" = [double]"$($hourlyData.windspeed_10m[$k])"
-                "windsp_850" = [double]"$($hourlyData.windspeed_850hPa[$k])"
-                "windgust10" =[double]"$($hourlyData.windgusts_10m[$k])"
-            }
-    
-            $weatheChartingObjects += $chartingItems | Select-Object date,time,temp2m,temp180m,temp850hPa,dp2m,dp850hPa,cp,windsp_10m,windsp_850,windgust10
-        }
-       
         $series1 = $chart1.Series.Add("Temp2m")
         $series1.ChartType = "Spline"
         $series1.Color = "Red"
@@ -186,15 +149,15 @@ function Get-Weather  {
             New-Item -Path $topWeatherFolder\$today -ItemType Directory
         }
 
-        $series1.Points.DataBindXY($weatheChartingObjects.time,$weatheChartingObjects.temp2m)
-        $series2.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.temp180m)
-        $series3.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.temp850hPa)
-        $series4.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.dp2m)
-        $series5.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.dp850hPa)
-        $series6.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.cp)
-        $series7.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.windsp_10m)
-        $series8.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.windsp_850)
-        $series9.Points.DataBindXY($weatheChartingObjects.Time,$weatheChartingObjects.windgust10)
+        $series1.Points.DataBindXY($hourlyData.time[0 .. $hrs],$hourlyData.temperature_2m[0 .. $hrs])
+        $series2.Points.DataBindXY($hourlyData.time[0 .. $hrs],$hourlyData.temperature_180m[0 .. $hrs])
+        $series3.Points.DataBindXY($hourlyData.time[0 .. $hrs],$hourlyData.temperature_850hPa[0 .. $hrs])
+        $series4.Points.DataBindXY($hourlyData.time[0 .. $hrs],$hourlyData.dewpoint_2m[0 .. $hrs])
+        $series5.Points.DataBindXY($hourlyData.time[0 .. $hrs],$hourlyData.dewpoint_850hPa[0 .. $hrs])
+        $series6.Points.DataBindXY($hourlyData.time[0 .. $hrs],$hourlyData.cape[0 .. $hrs])
+        $series7.Points.DataBindXY($hourlyData.time[0 .. $hrs],$hourlyData.windspeed_10m[0 .. $hrs])
+        $series8.Points.DataBindXY($hourlyData.time[0 .. $hrs],$hourlyData.windspeed_850hPa[0 .. $hrs])
+        $series9.Points.DataBindXY($hourlyData.time[0 .. $hrs],$hourlyData.windgusts_10m[0 .. $hrs])
 
 
         $temperatureChartImage = "$($topWeatherFolder)\$($today)\Temp_$($today)_$($hours)hours.png"
