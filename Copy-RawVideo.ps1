@@ -83,11 +83,12 @@ Function Copy-RawVideo () {
             $fileSize = $j.FileSize.split(" ") # create an array of number and unit
             
             if ($fileSize[1] -eq "GB") {
-                $fileSize[0] * 1024 # total file transfer size is in MB
+            $fileSizeResult = ($fileSize[0] -as [double]) * 1024 # total file transfer size is in MB
             }
-            
-            $fileSize = $fileSize[0] # save the value to single int
-            $totalTransfer = $totalTransfer + $fileSize
+            else {
+            $fileSizeResult = ($fileSize[0] -as [double]) # save the value to single int
+            }
+            $totalTransfer = $totalTransfer + $fileSizeResult
         }
 
         # Get the datestamp and file size progress info from EXIF
@@ -98,10 +99,12 @@ Function Copy-RawVideo () {
             $singleFileSize = $jn.FileSize.split(" ")
             
             if ($singleFileSize[1] -eq "GB") {
-                $singleFileSize[0] * 1024
+            $singleFileSizeResult = ($singleFileSize[0] -as [double]) * 1024
             }
-            $singleFileSize = $singleFileSize[0]
-            $runTot = $runTot + $singleFileSize
+            else {
+            $singleFileSizeResult = ($singleFileSize[0] -as [double])
+            }
+            $runTot = $runTot + $singleFileSizeResult
 
           # [DateTime]$shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
           # [string]$shortDate = $shortDate.ToLongDateString()
