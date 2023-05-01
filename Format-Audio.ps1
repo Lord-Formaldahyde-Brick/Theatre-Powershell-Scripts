@@ -18,7 +18,7 @@
     both for current user and system, if other user accounts need access
     The function should be copied and used from the Powershell User Profile file which is created by typing...
     New-Item -Path $profile -ItemType File -Force
-    This is created as %UserProfile%\Documents\Windows­PowerShell\Microsoft.PowerShell_profile.ps1
+    This is created as %UserProfile%\Documents\Windows\�PowerShell\profile.ps1
     This script is my first in Powershell, it has taken a couple of days to get this script done. Bash and C are more familiar
     and you can see that in the code, although it works quite robustly and I think it's quite readable. However, much to learn me thinks!
  .LINK
@@ -51,12 +51,15 @@
         # functions
     
         function Convert2Wav () { 
-            foreach($file in Get-ChildItem -Name -Exclude processed-output){ 
-                $cleanFile = $file | sed 's/[^a-zA-Z0-9 _.-]//g'   # remove illegal characters
-                Move-Item $file $cleanFile
+            foreach($file in Get-ChildItem -Exclude processed-output){ 
+                if ($file.attributes -eq "Archive") {
+                $file.attributes = "Normal"
+                $cleanFile = $file.name | sed 's/[^a-zA-Z0-9 _.-]//g'   # remove illegal characters
+                Move-Item $file.name $cleanFile
                 $name = Write-Output($cleanFile) | sed 's/\.[^.]*$//'   # remove file type suffix to leave just the name               
                 $newFile = Write-Output("processed-output/" + $name + ".wav") 
                 ffmpeg -i $cleanFile -y $newFile # -y option allows unquestioned overwrite if output files exist
+                }
             }
         }
         
@@ -66,18 +69,23 @@
                 [Parameter()][string]$SR
                 )
             Write-Host "`nMeasuring Track Level`n"
-            foreach($file in Get-ChildItem -Name -Exclude output){       
-                $captureR128Gain = r128gain --progress=off  --reference=$LU0 $file
-                [float]$gain =  [string]($captureR128Gain | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
-                Write-Host "`n"$file"`n"
-                if ($gain -ne 0) {
-                    Write-Host "Not equal to 0 LU - Adjusting Gain`n"
-                    sox -S -V3 "$file" output/"$file" rate "$SR" gain $gain
+            foreach($file in Get-ChildItem -Exclude output){  
+                if ($file.attributes -eq "Archive") {   
+                    $thisFile = $file.name  
+                    $captureR128Gain = r128gain --progress=off  --reference=$LU0 $file.name
+                    [float]$gain =  [string]($captureR128Gain | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
+                    Write-Host "`n"$thisFile"`n"
+                    if ($gain -ne 0) {
+                        Write-Host "Not equal to 0 LU - Adjusting Gain`n"
+                        sox -S -V3 "$thisfile" output/"$thisfile" rate "$SR" gain $gain
+                        
+                    }
+                    else {
+                        Write-Host "Gain is already 0 LU`n"
+                        sox -S -V3 "$thisfile" output/"$thisfile" rate "$SR"
+                        
+                    }        
                 }
-                else {
-                    Write-Host "Gain is already 0 LU`n"
-                    sox -S -V3 "$file" output/"$file" rate "$SR"
-                }        
             }  
         }    
     
@@ -90,8 +98,11 @@
             $captureR128Gain = r128gain --progress=off  --reference=$LU0 *.wav
             [float]$gain =  [string]($captureR128Gain | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
             Write-Host "`nSetting Gain"
-            foreach ( $file in Get-ChildItem -Name -Exclude output ) {
-                sox -S -V3 "$file" output/"$file" rate "$SR" gain $gain
+            foreach ( $file in Get-ChildItem  -Exclude output ) {
+                if ($file.attributes -eq "Archive") {
+                    $thisFile = $file.name
+                    sox -S -V3 "$thisfile" output/"$thisfile" rate "$SR" gain $gain
+                    }
             }
         }
     
@@ -197,9 +208,12 @@
      
         # tidy up
     
-        Remove-Item *.wav
-        Move-Item output/* ./
+        Copy-Item output/* ./
         Remove-Item -r output 
+        foreach($file in Get-ChildItem){
+        $file.Attributes = "Normal"
+        }
+
         Set-Location ..
         Write-Host "`nAll Done`nHave a nice day" 
     

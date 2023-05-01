@@ -214,7 +214,8 @@ function Get-Weather  {
     else {
         $maxItems= $hourlyData.time.length
     }
-    $wob = @()
+    $wob = New-Object -TypeName System.Collections.ArrayList
+   
     
     for ($k=0; $k -lt $maxItems; $k++){
         $dt = [DateTime]$hourlyData.time[$k].split("T")[0];
@@ -258,10 +259,10 @@ function Get-Weather  {
         }
         
         $wob += $obj | Select-Object Date,Time,Temperature-2m,Dewpoint-2m,Temperature-180m,Temperature-850hPa,Dewpoint-850hPa,CAPE,K-Index,TT-Index,Wind-Speed-10m,Wind-Gusts-10m,Wind-Speed-850hPa,Wind-Dir-10m,Wind-Dir-850hPa,Pressure-MSL,Surface-Pressure,Precipitation,Cloud-Cover-Below-3Km,Cloud-Cover-3Km-to-8Km,Cloud-Cover-Above-8Km,Synopsis
+
         
     }
 
-    
     makeCharts -maxItems $maxItems
 
     # Start building html presentation page
