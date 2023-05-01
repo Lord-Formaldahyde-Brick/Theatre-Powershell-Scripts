@@ -3,7 +3,7 @@ Function Copy-RawVideo () {
     
         Add-Type -AssemblyName System.Windows.Forms
         Add-Type -AssemblyName System.Drawing
-        
+        [string]$storagePath = "D:\RawVideo" # Change this path to where the videos are stored
         
         $FileBrowser = New-Object System.Windows.Forms.OpenFileDialog
         $FileBrowser.Multiselect =$true
@@ -79,21 +79,23 @@ Function Copy-RawVideo () {
 
         $totalTransfer = 0
         foreach($file in $FilesArray){
-         
-            try {
-                $j = $(exiftool -j -q $file) | ConvertFrom-Json -ErrorAction Stop
-                $fileSize = $j.FileSize.split(" ") # create an array of number and unit
             
-                if ($fileSize[1] -eq "GB") {
-                $fileSizeResult = ($fileSize[0] -as [double]) * 1024 # total file transfer size is in MB
+           if ($(Get-ItemProperty $file).Attributes -eq "Archive") {
+                try {
+                    $j = $(exiftool -j -q $file) | ConvertFrom-Json -ErrorAction Stop
+                    $fileSize = $j.FileSize.split(" ") # create an array of number and unit
+            
+                    if ($fileSize[1] -eq "GB") {
+                        $fileSizeResult = ($fileSize[0] -as [double]) * 1024 # total file transfer size is in MB
+                    }
+                    else {
+                        $fileSizeResult = ($fileSize[0] -as [double]) # save the value to single int
+                    }
+                    $totalTransfer = $totalTransfer + $fileSizeResult
                 }
-                else {
-                $fileSizeResult = ($fileSize[0] -as [double]) # save the value to single int
+                catch {
+                    Write-Output "No exif data`n"
                 }
-                $totalTransfer = $totalTransfer + $fileSizeResult
-            }
-            catch {
-            Write-Output "No exif data`n"
             }
         }
     
@@ -101,71 +103,75 @@ Function Copy-RawVideo () {
 
         $runTot = 0
         foreach($file in $FilesArray){
-            try{
-                $jn = $(exiftool -j -q $file) | ConvertFrom-Json -ErrorAction Stop
-                $singleFileSize = $jn.FileSize.split(" ") 
+            if ($(Get-ItemProperty $file).Attributes -eq "Archive") { 
+                try{
+                    $jn = $(exiftool -j -q $file) | ConvertFrom-Json -ErrorAction Stop
+                    $singleFileSize = $jn.FileSize.split(" ") 
             
-                if ($singleFileSize[1] -eq "GB") {
-                    $singleFileSizeResult = ($singleFileSize[0] -as [double]) * 1024
-                }
-                else {
-                    $singleFileSizeResult = ($singleFileSize[0] -as [double])
-                }
-                $runTot = $runTot + $singleFileSizeResult
+                    if ($singleFileSize[1] -eq "GB") {
+                        $singleFileSizeResult = ($singleFileSize[0] -as [double]) * 1024
+                    }
+                    else {
+                        $singleFileSizeResult = ($singleFileSize[0] -as [double])
+                    }
+                    $runTot = $runTot + $singleFileSizeResult
 
             # [DateTime]$shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
             # [string]$shortDate = $shortDate.ToLongDateString()
             # $subFolderName = "$headFolder"+"-"+"$shortDate"
 
-                $shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
-                $subFolderName = "$headFolder"+"$shortDate"
+                    $shortDate = $($jn.createdate).Substring(0,10).Replace(":","-")
+                    $subFolderName = "$headFolder"+"$shortDate"
 
 
             # get basename of current file, used in 'file exist' test later
         
-                $maxIndex = $($file.Split("\").Length) - 1
-                $fileToTest = $file.Split("\")[$maxIndex]           
-                Write-Progress -Activity "Getting Video" -id 1 -Status "Copying $($fileToTest)"
-                $feedback = $true
-            }
-            catch {
-                $maxIndex = $($file.Split("\").Length) - 1
-                $fd = Get-ChildItem $file
-                Write-Output "Copying $($fd.Length) bytes of $($file) to the processed folder of $($listBox.SelectedItem)"
-                $fileToTest = $file.Split("\")[$maxIndex]
-                $subFolderName = "$headFolder"+"-ProcessedVideo"
-                $feedback = $false
-            }
+                    $maxIndex = $($file.Split("\").Length) - 1
+                    $fileToTest = $file.Split("\")[$maxIndex]           
+                    Write-Progress -Activity "Getting Video" -id 1 -Status "Copying $($fileToTest)"
+                    $feedback = $true
+                }
+                catch {
+                    $maxIndex = $($file.Split("\").Length) - 1
+                    $fd = Get-ChildItem $file
+                    Write-Output "Copying $($fd.Length) bytes of $($file) to the processed folder of $($listBox.SelectedItem)"
+                    $fileToTest = $file.Split("\")[$maxIndex]
+                    $subFolderName = "$headFolder"+"-ProcessedVideo"
+                    $feedback = $false
+                }
             
             # Copying and Sorting
     
-            [string]$storagePath = "V:\RawVideo" # Change this path to where the videos are stored
+                
     
-            if ( Test-Path $storagePath\$headFolder\$subFolderName\$fileToTest -PathType Leaf) {
-                Write-Host "The file exists, moving on"
-            }
-            else {
-                if (Test-Path $storagePath\$headFolder) {
-                    if (Test-Path $storagePath\$headFolder\$subFolderName) {
-                        Copy-Item $file $storagePath\$headFolder\$subFolderName
-                    }
-                    else {
-                        Set-Location $storagePath\$headFolder  # new folders can onlt be made from the direct parent folder
-                        New-Item -name $subFolderName -ItemType Directory
-                        Copy-Item $file $storagePath\$headFolder\$subFolderName   # full destination path because of problems over network
-                    }
+                if ( Test-Path $storagePath\$headFolder\$subFolderName\$fileToTest -PathType Leaf) {
+                    Write-Host "The file exists, moving on"
                 }
                 else {
-                    Set-Location $storagePath
-                    New-Item -name $headFolder -ItemType Directory
-                    Set-Location $storagePath\$headFolder
-                    New-Item -name $subFolderName -ItemType Directory
-                    Copy-Item $file $storagePath\$headFolder\$subFolderName
-                }
-            } 
-                if ($feedback){
-                    Write-Progress -Activity "Video Transfered" -Status "$([math]::round(($runTot/$totalTransfer) * 100,2))% of transfer completed" -Id 2  -PercentComplete $(($runTot/$totalTransfer) * 100)
-                }
+                    if (Test-Path $storagePath\$headFolder) {
+                        if (Test-Path $storagePath\$headFolder\$subFolderName) {
+                            Copy-Item $file $storagePath\$headFolder\$subFolderName
+                        }
+                        else {
+                            Set-Location $storagePath\$headFolder  # new folders can onlt be made from the direct parent folder
+                            New-Item -name $subFolderName -ItemType Directory
+                            Copy-Item $file $storagePath\$headFolder\$subFolderName   # full destination path because of problems over network
+                        }
+                    }
+                    else {
+                        Set-Location $storagePath
+                        New-Item -name $headFolder -ItemType Directory
+                        Set-Location $storagePath\$headFolder
+                        New-Item -name $subFolderName -ItemType Directory
+                        Copy-Item $file $storagePath\$headFolder\$subFolderName
+                    }
+                } 
+                    if ($feedback){
+                        Write-Progress -Activity "Video Transfered" -Status "$([math]::round(($runTot/$totalTransfer) * 100,2))% of transfer completed" -Id 2  -PercentComplete $(($runTot/$totalTransfer) * 100)
+                    }
+
+                $(Get-ItemProperty $file).Attributes = "Normal"
+            }
         }       
         
         Set-Location $storagePath
