@@ -42,7 +42,7 @@
             [float]$SetTargetGain,
                 
             [Parameter(Mandatory = $false)]
-            [bool]$Album,
+            [switch]$Album,
 
             [Parameter(Mandatory = $false)]
             [string]$SampleRate
@@ -53,12 +53,12 @@
         function Convert2Wav () { 
             foreach($file in Get-ChildItem -Exclude processed-output){ 
                 if ($file.attributes -eq "Archive") {
-                $file.attributes = "Normal"
-                $cleanFile = $file.name | sed 's/[^a-zA-Z0-9 _.-]//g'   # remove illegal characters
-                Move-Item $file.name $cleanFile
-                $name = Write-Output($cleanFile) | sed 's/\.[^.]*$//'   # remove file type suffix to leave just the name               
-                $newFile = Write-Output("processed-output/" + $name + ".wav") 
-                ffmpeg -i $cleanFile -y $newFile # -y option allows unquestioned overwrite if output files exist
+                    $file.attributes = "Normal"
+                    $cleanFile = $file.name | sed 's/[^a-zA-Z0-9 _.-]//g'   # remove illegal characters
+                    Move-Item $file.name $cleanFile
+                    $name = Write-Output($cleanFile) | sed 's/\.[^.]*$//'   # remove file type suffix to leave just the name               
+                    $newFile = Write-Output("processed-output/" + $name + ".wav") 
+                    ffmpeg -i $cleanFile -y $newFile # -y option allows unquestioned overwrite if output files exist
                 }
             }
         }
@@ -68,22 +68,21 @@
                 [Parameter()][float]$LU0, 
                 [Parameter()][string]$SR
                 )
-            Write-Host "`nMeasuring Track Level`n"
+            
             foreach($file in Get-ChildItem -Exclude output){  
-                if ($file.attributes -eq "Archive") {   
-                    $thisFile = $file.name  
+                if ($file.attributes -eq "Archive") {  
+                    $thisFile = $file.name 
+                    Write-Output "`nMeasuring Track Level`n"  
                     $captureR128Gain = r128gain --progress=off  --reference=$LU0 $file.name
                     [float]$gain =  [string]($captureR128Gain | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
-                    Write-Host "`n"$thisFile"`n"
+                    Write-Output "`n"$thisFile"`n"
                     if ($gain -ne 0) {
-                        Write-Host "Not equal to 0 LU - Adjusting Gain`n"
+                        Write-Output "Not equal to 0 LU - Adjusting Gain`n"
                         sox -S -V3 "$thisfile" output/"$thisfile" rate "$SR" gain $gain
-                        
                     }
                     else {
-                        Write-Host "Gain is already 0 LU`n"
-                        sox -S -V3 "$thisfile" output/"$thisfile" rate "$SR"
-                        
+                        Write-Output "Gain is already 0 LU`n"
+                        sox -S -V3 "$thisfile" output/"$thisfile" rate "$SR"                       
                     }        
                 }
             }  
@@ -94,15 +93,16 @@
                 [Parameter()][float]$LU0, 
                 [Parameter()][string]$SR
             )
-            Write-Host "`nMeasuring Levels`n"
+            Write-Output "`nMeasuring Levels`n"
             $captureR128Gain = r128gain --progress=off  --reference=$LU0 *.wav
             [float]$gain =  [string]($captureR128Gain | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
-            Write-Host "`nSetting Gain"
+            
             foreach ( $file in Get-ChildItem  -Exclude output ) {
                 if ($file.attributes -eq "Archive") {
                     $thisFile = $file.name
+                    Write-Output "`nSetting Gain"
                     sox -S -V3 "$thisfile" output/"$thisfile" rate "$SR" gain $gain
-                    }
+                }
             }
         }
     
@@ -124,7 +124,7 @@
         # Test if processed audio folder exists
     
         if ( Test-Path ".\processed-output" ) {
-            Write-Host "Folder exists"
+            Write-Output "Folder exists"
         }
         else {
             New-Item -Path ".\" -Name "processed-output" -ItemType "directory"
@@ -198,11 +198,11 @@
         # Test for Album and choose which functions to call
 
         if ($Album) {
-            Write-Host "`nAlbum Mode`n"
+            Write-Output "`nAlbum Mode`n"
             AlbumByAlbum -LU0 $SetTargetGain -SR $SR
         }
         else {
-            Write-Host "`nTrack Mode`n"
+            Write-Output "`nTrack Mode`n"
             TrackByTrack -LU0 $SetTargetGain -SR $SR
         }
      
@@ -215,6 +215,6 @@
         }
 
         Set-Location ..
-        Write-Host "`nAll Done`nHave a nice day" 
+        Write-Output "`nAll Done`nHave a nice day" 
     
     }
