@@ -93,10 +93,18 @@
                 [Parameter()][float]$LU0, 
                 [Parameter()][string]$SR
             )
+            
+            $levels = $false
+            foreach ($file in Get-ChildItem -exclude output) {
+                if ($file.attributes -eq "Archive") {
+                    $levels = $true
+                }                
+            }
+            if ($levels) {
             Write-Output "`nMeasuring Levels`n"
             $captureR128Gain = r128gain --progress=off  --reference=$LU0 *.wav
             [float]$gain =  [string]($captureR128Gain | Select-String ALBUM | sed 's/^.*LUFS .//' | sed 's/ LU.//')
-            
+            }
             foreach ( $file in Get-ChildItem  -Exclude output ) {
                 if ($file.attributes -eq "Archive") {
                     $thisFile = $file.name
